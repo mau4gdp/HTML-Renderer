@@ -19,7 +19,8 @@ using System.Windows.Forms;
 using TheArtOfDev.HtmlRenderer.Demo.Common;
 using TheArtOfDev.HtmlRenderer.PdfSharp;
 using TheArtOfDev.HtmlRenderer.WinForms;
-using PdfSharp;
+using PdfSharpCore;
+using System.Reflection;
 
 namespace TheArtOfDev.HtmlRenderer.Demo.WinForms
 {
@@ -45,13 +46,13 @@ namespace TheArtOfDev.HtmlRenderer.Demo.WinForms
             InitializeComponent();
 
             Icon = GetIcon();
-            _openSampleFormTSB.Image = Common.Properties.Resources.form;
-            _showIEViewTSSB.Image = Common.Properties.Resources.browser;
-            _openInExternalViewTSB.Image = Common.Properties.Resources.chrome;
-            _useGeneratedHtmlTSB.Image = Common.Properties.Resources.code;
-            _generateImageSTB.Image = Common.Properties.Resources.image;
-            _generatePdfTSB.Image = Common.Properties.Resources.pdf;
-            _runPerformanceTSB.Image = Common.Properties.Resources.stopwatch;
+            //_openSampleFormTSB.Image = Properties.Resources.form;
+            //_showIEViewTSSB.Image = Properties.Resources.browser;
+            //_openInExternalViewTSB.Image = Common.Properties.Resources.chrome;
+            //_useGeneratedHtmlTSB.Image = Common.Properties.Resources.code;
+            //_generateImageSTB.Image = Common.Properties.Resources.image;
+            //_generatePdfTSB.Image = Common.Properties.Resources.pdf;
+            //_runPerformanceTSB.Image = Common.Properties.Resources.stopwatch;
 
             StartPosition = FormStartPosition.CenterScreen;
             var size = Screen.GetWorkingArea(Point.Empty);
