@@ -24,7 +24,7 @@ namespace TheArtOfDev.HtmlRenderer.Adapters.Entities
         /// <summary>
         ///     Represents an instance of the <see cref="RRect" /> class with its members uninitialized.
         /// </summary>
-        public static readonly RRect Empty = new RRect();
+        public static readonly RRect Empty = new();
 
         private double _height;
         private double _width;
@@ -284,9 +284,9 @@ namespace TheArtOfDev.HtmlRenderer.Adapters.Entities
         /// <param name="obj">
         ///     The <see cref="T:System.Object" /> to test.
         /// </param>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (!(obj is RRect))
+            if (obj is not RRect)
                 return false;
             var rectangleF = (RRect)obj;
             if (Math.Abs(rectangleF.X - X) < 0.001 && Math.Abs(rectangleF.Y - Y) < 0.001 && Math.Abs(rectangleF.Width - Width) < 0.001)

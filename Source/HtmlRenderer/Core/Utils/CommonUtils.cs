@@ -81,7 +81,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// <summary>
         /// the temp path to use for local files
         /// </summary>
-        public static String _tempPath;
+        public static string? _tempPath;
 
         #endregion
 
@@ -141,7 +141,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// </summary>
         /// <param name="path">the path to get uri for</param>
         /// <returns>uri or null if not valid</returns>
-        public static Uri TryGetUri(string path)
+        public static Uri? TryGetUri(string path)
         {
             try
             {
@@ -164,7 +164,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// <param name="dic">the dictionary</param>
         /// <param name="defaultValue">optional: the default value to return of no elements found in dictionary </param>
         /// <returns>first element or default value</returns>
-        public static TValue GetFirstValueOrDefault<TKey, TValue>(IDictionary<TKey, TValue> dic, TValue defaultValue = default(TValue))
+        public static TValue? GetFirstValueOrDefault<TKey, TValue>(IDictionary<TKey, TValue> dic, TValue? defaultValue = default)
         {
             if (dic != null)
             {
@@ -179,7 +179,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// </summary>
         /// <param name="path">the path to get file info for</param>
         /// <returns>file info or null if not valid</returns>
-        public static FileInfo TryGetFileInfo(string path)
+        public static FileInfo? TryGetFileInfo(string path)
         {
             try
             {
@@ -196,14 +196,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// </summary>
         /// <param name="client">the web client to get the response content type from</param>
         /// <returns>response content type or null</returns>
-        public static string GetResponseContentType(WebClient client)
-        {
-            foreach (string header in client.ResponseHeaders)
-            {
-                if (header.Equals("Content-Type", StringComparison.InvariantCultureIgnoreCase))
-                    return client.ResponseHeaders[header];
-            }
-            return null;
+        public static string? GetResponseContentType(HttpResponseMessage? res)
+        {            
+            return res?.Content.Headers.ContentType?.ToString();
         }
 
         /// <summary>
@@ -211,9 +206,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// </summary>
         /// <param name="imageUri">The online image uri.</param>
         /// <returns>The path of the file on the disk.</returns>
-        public static FileInfo GetLocalfileName(Uri imageUri)
+        public static FileInfo? GetLocalfileName(Uri imageUri)
         {
-            StringBuilder fileNameBuilder = new StringBuilder();
+            StringBuilder fileNameBuilder = new();
             string absoluteUri = imageUri.AbsoluteUri;
             int lastSlash = absoluteUri.LastIndexOf('/');
             if (lastSlash == -1)
@@ -221,11 +216,11 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
                 return null;
             }
 
-            string uriUntilSlash = absoluteUri.Substring(0, lastSlash);
+            string uriUntilSlash = absoluteUri[..lastSlash];
             fileNameBuilder.Append(uriUntilSlash.GetHashCode().ToString());
             fileNameBuilder.Append('_');
 
-            string restOfUri = absoluteUri.Substring(lastSlash + 1);
+            string restOfUri = absoluteUri[(lastSlash + 1)..];
             int indexOfParams = restOfUri.IndexOf('?');
             if (indexOfParams == -1)
             {
@@ -233,8 +228,8 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
                 int indexOfDot = restOfUri.IndexOf('.');
                 if (indexOfDot > -1)
                 {
-                    ext = restOfUri.Substring(indexOfDot);
-                    restOfUri = restOfUri.Substring(0, indexOfDot);
+                    ext = restOfUri[indexOfDot..];
+                    restOfUri = restOfUri[..indexOfDot];
                 }
 
                 fileNameBuilder.Append(restOfUri);
@@ -263,7 +258,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
             var validFileName = GetValidFileName(fileNameBuilder.ToString());
             if (validFileName.Length > 25)
             {
-                validFileName = validFileName.Substring(0, 24) + validFileName.Substring(24).GetHashCode() + Path.GetExtension(validFileName);
+                validFileName = validFileName[..24] + validFileName[24..].GetHashCode() + Path.GetExtension(validFileName);
             }
 
             if (_tempPath == null)
@@ -285,12 +280,12 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// <returns>the index of the substring, -1 if no valid sub-string found</returns>
         public static int GetNextSubString(string str, int idx, out int length)
         {
-            while (idx < str.Length && Char.IsWhiteSpace(str[idx]))
+            while (idx < str.Length && char.IsWhiteSpace(str[idx]))
                 idx++;
             if (idx < str.Length)
             {
                 var endIdx = idx + 1;
-                while (endIdx < str.Length && !Char.IsWhiteSpace(str[endIdx]))
+                while (endIdx < str.Length && !char.IsWhiteSpace(str[endIdx]))
                     endIdx++;
                 length = endIdx - idx;
                 return idx;
@@ -310,7 +305,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
             {
                 for (int i = 0; i < length; i++)
                 {
-                    if (Char.ToLowerInvariant(str[idx + i]) != Char.ToLowerInvariant(str2[i]))
+                    if (char.ToLowerInvariant(str[idx + i]) != char.ToLowerInvariant(str2[i]))
                         return false;
                 }
                 return true;
@@ -399,12 +394,12 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
                 var n = number % 26 - 1;
                 if (n >= 0)
                 {
-                    sb = (Char)(alphStart + n) + sb;
+                    sb = (char)(alphStart + n) + sb;
                     number = number / 26;
                 }
                 else
                 {
-                    sb = (Char)(alphStart + 25) + sb;
+                    sb = (char)(alphStart + 25) + sb;
                     number = (number - 1) / 26;
                 }
             }
@@ -427,12 +422,12 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
                     n++;
                 if (n >= 0)
                 {
-                    sb = (Char)(945 + n) + sb;
+                    sb = (char)(945 + n) + sb;
                     number = number / 24;
                 }
                 else
                 {
-                    sb = (Char)(945 + 24) + sb;
+                    sb = (char)(945 + 24) + sb;
                     number = (number - 1) / 25;
                 }
             }

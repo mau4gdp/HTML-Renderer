@@ -245,7 +245,7 @@ namespace TheArtOfDev.HtmlRenderer.WPF
         /// Get html from the current DOM tree with inline style.
         /// </summary>
         /// <returns>generated html</returns>
-        public virtual string GetHtml()
+        public virtual string? GetHtml()
         {
             return _htmlContainer != null ? _htmlContainer.GetHtml() : null;
         }

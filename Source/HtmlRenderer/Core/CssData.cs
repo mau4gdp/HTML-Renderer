@@ -33,12 +33,12 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <summary>
         /// used to return empty array
         /// </summary>
-        private static readonly List<CssBlock> _emptyArray = new List<CssBlock>();
+        private static readonly List<CssBlock> _emptyArray = new();
 
         /// <summary>
         /// dictionary of media type to dictionary of css class name to the cssBlocks collection with all the data.
         /// </summary>
-        private readonly Dictionary<string, Dictionary<string, List<CssBlock>>> _mediaBlocks = new Dictionary<string, Dictionary<string, List<CssBlock>>>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<string, Dictionary<string, List<CssBlock>>> _mediaBlocks = new(StringComparer.InvariantCultureIgnoreCase);
 
         #endregion
 
@@ -63,7 +63,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <returns>the parsed css data</returns>
         public static CssData Parse(RAdapter adapter, string stylesheet, bool combineWithDefault = true)
         {
-            CssParser parser = new CssParser(adapter);
+            CssParser parser = new(adapter);
             return parser.ParseStyleSheet(stylesheet, combineWithDefault);
         }
 
@@ -83,8 +83,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <returns>true - has css blocks for the class, false - otherwise</returns>
         public bool ContainsCssBlock(string className, string media = "all")
         {
-            Dictionary<string, List<CssBlock>> mid;
-            return _mediaBlocks.TryGetValue(media, out mid) && mid.ContainsKey(className);
+            return _mediaBlocks.TryGetValue(media, out var mid) && mid.ContainsKey(className);
         }
 
         /// <summary>
@@ -99,9 +98,8 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <returns>collection of css blocks, empty collection if no blocks exists (never null)</returns>
         public IEnumerable<CssBlock> GetCssBlock(string className, string media = "all")
         {
-            List<CssBlock> block = null;
-            Dictionary<string, List<CssBlock>> mid;
-            if (_mediaBlocks.TryGetValue(media, out mid))
+            List<CssBlock>? block = null;
+            if (_mediaBlocks.TryGetValue(media, out var mid))
             {
                 mid.TryGetValue(className, out block);
             }
@@ -124,8 +122,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="cssBlock">the css block to add</param>
         public void AddCssBlock(string media, CssBlock cssBlock)
         {
-            Dictionary<string, List<CssBlock>> mid;
-            if (!_mediaBlocks.TryGetValue(media, out mid))
+            if (!_mediaBlocks.TryGetValue(media, out var mid))
             {
                 mid = new Dictionary<string, List<CssBlock>>(StringComparer.InvariantCultureIgnoreCase);
                 _mediaBlocks.Add(media, mid);
@@ -133,8 +130,10 @@ namespace TheArtOfDev.HtmlRenderer.Core
 
             if (!mid.ContainsKey(cssBlock.Class))
             {
-                var list = new List<CssBlock>();
-                list.Add(cssBlock);
+                var list = new List<CssBlock>
+                {
+                    cssBlock
+                };
                 mid[cssBlock.Class] = list;
             }
             else
@@ -169,7 +168,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="other">the CSS data to combine with</param>
         public void Combine(CssData other)
         {
-            ArgChecker.AssertArgNotNull(other, "other");
+            ArgumentNullException.ThrowIfNull(other, nameof(other));
 
             // for each media block
             foreach (var mediaBlock in other.MediaBlocks)

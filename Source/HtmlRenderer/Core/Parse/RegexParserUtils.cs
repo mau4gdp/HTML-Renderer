@@ -87,7 +87,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <summary>
         /// the regexes cache that is used by the parser so not to create regex each time
         /// </summary>
-        private static readonly Dictionary<string, Regex> _regexes = new Dictionary<string, Regex>();
+        private static readonly Dictionary<string, Regex> _regexes = new();
 
         #endregion
 
@@ -98,7 +98,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="stylesheet">the stylesheet data to retrieve the rule from</param>
         /// <param name="startIdx">the index to start the search for the rule, on return will be the value of the end of the found rule</param>
         /// <returns>the found at rule or null if not exists</returns>
-        public static string GetCssAtRules(string stylesheet, ref int startIdx)
+        public static string? GetCssAtRules(string stylesheet, ref int startIdx)
         {
             startIdx = stylesheet.IndexOf('@', startIdx);
             if (startIdx > -1)
@@ -148,10 +148,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="regex"></param>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static string Search(string regex, string source)
+        public static string? Search(string regex, string source)
         {
-            int position;
-            return Search(regex, source, out position);
+            return Search(regex, source, out int position);
         }
 
         /// <summary>
@@ -161,7 +160,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="source"></param>
         /// <param name="position"> </param>
         /// <returns></returns>
-        public static string Search(string regex, string source, out int position)
+        public static string? Search(string regex, string source, out int position)
         {
             MatchCollection matches = Match(regex, source);
 
@@ -185,8 +184,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <returns>the regex instance</returns>
         private static Regex GetRegex(string regex)
         {
-            Regex r;
-            if (!_regexes.TryGetValue(regex, out r))
+            if (!_regexes.TryGetValue(regex, out var r))
             {
                 r = new Regex(regex, RegexOptions.IgnoreCase | RegexOptions.Singleline);
                 _regexes[regex] = r;

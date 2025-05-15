@@ -112,7 +112,7 @@ namespace TheArtOfDev.HtmlRenderer.WPF.Adapters
             return new BrushAdapter(new LinearGradientBrush(startColor, endColor, new Point(x, y), new Point(1 - x, 1 - y)));
         }
 
-        protected override RImage ConvertImageInt(object image)
+        protected override RImage? ConvertImageInt(object image)
         {
             return image != null ? new ImageAdapter((BitmapImage)image) : null;
         }
@@ -165,7 +165,7 @@ namespace TheArtOfDev.HtmlRenderer.WPF.Adapters
             return new ContextMenuAdapter();
         }
 
-        protected override void SaveToFileInt(RImage image, string name, string extension, RControl control = null)
+        protected override void SaveToFileInt(RImage image, string name, string extension, RControl? control = null)
         {
             var saveDialog = new SaveFileDialog();
             saveDialog.Filter = "Images|*.png;*.bmp;*.jpg;*.tif;*.gif;*.wmp;";

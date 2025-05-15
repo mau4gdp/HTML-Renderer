@@ -32,6 +32,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <param name="rectangle">the rectangle to draw image in</param>
         public static void DrawBackgroundImage(RGraphics g, CssBox box, ImageLoadHandler imageLoadHandler, RRect rectangle)
         {
+            ArgumentNullException.ThrowIfNull(imageLoadHandler.Image, nameof(imageLoadHandler.Image));
             // image size depends if specific rectangle given in image loader
             var imgSize = new RSize(imageLoadHandler.Rectangle == RRect.Empty ? imageLoadHandler.Image.Width : imageLoadHandler.Rectangle.Width,
                 imageLoadHandler.Rectangle == RRect.Empty ? imageLoadHandler.Image.Height : imageLoadHandler.Rectangle.Height);
@@ -119,13 +120,12 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// </summary>
         private static void DrawRepeatX(RGraphics g, ImageLoadHandler imageLoadHandler, RRect rectangle, RRect srcRect, RRect destRect, RSize imgSize)
         {
+            ArgumentNullException.ThrowIfNull(imageLoadHandler.Image, nameof(imageLoadHandler.Image));
             while (destRect.X > rectangle.X)
                 destRect.X -= imgSize.Width;
 
-            using (var brush = g.GetTextureBrush(imageLoadHandler.Image, srcRect, destRect.Location))
-            {
-                g.DrawRectangle(brush, rectangle.X, destRect.Y, rectangle.Width, srcRect.Height);
-            }
+            using var brush = g.GetTextureBrush(imageLoadHandler.Image, srcRect, destRect.Location);
+            g.DrawRectangle(brush, rectangle.X, destRect.Y, rectangle.Width, srcRect.Height);
         }
 
         /// <summary>
@@ -134,13 +134,12 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// </summary>
         private static void DrawRepeatY(RGraphics g, ImageLoadHandler imageLoadHandler, RRect rectangle, RRect srcRect, RRect destRect, RSize imgSize)
         {
+            ArgumentNullException.ThrowIfNull(imageLoadHandler.Image, nameof(imageLoadHandler.Image));
             while (destRect.Y > rectangle.Y)
                 destRect.Y -= imgSize.Height;
 
-            using (var brush = g.GetTextureBrush(imageLoadHandler.Image, srcRect, destRect.Location))
-            {
-                g.DrawRectangle(brush, destRect.X, rectangle.Y, srcRect.Width, rectangle.Height);
-            }
+            using var brush = g.GetTextureBrush(imageLoadHandler.Image, srcRect, destRect.Location);
+            g.DrawRectangle(brush, destRect.X, rectangle.Y, srcRect.Width, rectangle.Height);
         }
 
         /// <summary>
@@ -149,15 +148,14 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// </summary>
         private static void DrawRepeat(RGraphics g, ImageLoadHandler imageLoadHandler, RRect rectangle, RRect srcRect, RRect destRect, RSize imgSize)
         {
+            ArgumentNullException.ThrowIfNull(imageLoadHandler.Image, nameof(imageLoadHandler.Image));
             while (destRect.X > rectangle.X)
                 destRect.X -= imgSize.Width;
             while (destRect.Y > rectangle.Y)
                 destRect.Y -= imgSize.Height;
 
-            using (var brush = g.GetTextureBrush(imageLoadHandler.Image, srcRect, destRect.Location))
-            {
-                g.DrawRectangle(brush, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
-            }
+            using var brush = g.GetTextureBrush(imageLoadHandler.Image, srcRect, destRect.Location);
+            g.DrawRectangle(brush, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
         }
 
         #endregion

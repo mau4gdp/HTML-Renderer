@@ -40,7 +40,7 @@ namespace TheArtOfDev.HtmlRenderer.Adapters.Entities
         ///     value of 0.
         /// </returns>
         /// <filterpriority>1</filterpriority>
-        public static readonly RSize Empty = new RSize();
+        public static readonly RSize Empty = new();
 
         private double _height;
         private double _width;
@@ -287,9 +287,9 @@ namespace TheArtOfDev.HtmlRenderer.Adapters.Entities
         ///     The <see cref="T:System.Object" /> to test.
         /// </param>
         /// <filterpriority>1</filterpriority>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (!(obj is RSize))
+            if (obj is not RSize)
                 return false;
             var sizeF = (RSize)obj;
             if (Math.Abs(sizeF.Width - Width) < 0.001 && Math.Abs(sizeF.Height - Height) < 0.001)

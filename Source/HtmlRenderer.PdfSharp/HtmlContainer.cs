@@ -10,7 +10,7 @@
 // - Sun Tsu,
 // "The Art of War"
 
-using PdfSharpCore.Drawing;
+using PdfSharp.Drawing;
 using System;
 using System.Collections.Generic;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
@@ -43,9 +43,11 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// </summary>
         public HtmlContainer()
         {
-            _htmlContainerInt = new HtmlContainerInt(PdfSharpAdapter.Instance);
-            _htmlContainerInt.AvoidAsyncImagesLoading = true;
-            _htmlContainerInt.AvoidImagesLateLoading = true;
+            _htmlContainerInt = new HtmlContainerInt(PdfSharpAdapter.Instance)
+            {
+                AvoidAsyncImagesLoading = true,
+                AvoidImagesLateLoading = true
+            };
         }
 
         /// <summary>
@@ -102,7 +104,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// <summary>
         /// the parsed stylesheet data used for handling the html
         /// </summary>
-        public CssData CssData
+        public CssData? CssData
         {
             get { return _htmlContainerInt.CssData; }
         }
@@ -238,7 +240,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// <summary>
         /// Get the currently selected text segment in the html.
         /// </summary>
-        public string SelectedText
+        public string? SelectedText
         {
             get { return _htmlContainerInt.SelectedText; }
         }
@@ -246,7 +248,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// <summary>
         /// Copy the currently selected html segment with style.
         /// </summary>
-        public string SelectedHtml
+        public string? SelectedHtml
         {
             get { return _htmlContainerInt.SelectedHtml; }
         }
@@ -256,7 +258,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// </summary>
         /// <param name="htmlSource">the html to init with, init empty if not given</param>
         /// <param name="baseCssData">optional: the stylesheet to init with, init default if not given</param>
-        public void SetHtml(string htmlSource, CssData baseCssData = null)
+        public void SetHtml(string htmlSource, CssData? baseCssData = null)
         {
             _htmlContainerInt.SetHtml(htmlSource, baseCssData);
         }
@@ -278,7 +280,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// <param name="location">the location to find the attribute at</param>
         /// <param name="attribute">the attribute key to get value by</param>
         /// <returns>found attribute value or null if not found</returns>
-        public string GetAttributeAt(XPoint location, string attribute)
+        public string? GetAttributeAt(XPoint location, string attribute)
         {
             return _htmlContainerInt.GetAttributeAt(Utils.Convert(location), attribute);
         }
@@ -289,8 +291,8 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// <returns>collection of all the links in the HTML</returns>
         public List<LinkElementData<XRect>> GetLinks()
         {
-            var linkElements = new List<LinkElementData<XRect>>();
-            foreach (var link in HtmlContainerInt.GetLinks())
+            List<LinkElementData<XRect>> linkElements = new();
+            foreach (LinkElementData<RRect> link in HtmlContainerInt.GetLinks())
             {
                 linkElements.Add(new LinkElementData<XRect>(link.Id, link.Href, Utils.Convert(link.Rectangle)));
             }
@@ -302,7 +304,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// </summary>
         /// <param name="location">the location to find the link at</param>
         /// <returns>css link href if exists or null</returns>
-        public string GetLinkAt(XPoint location)
+        public string? GetLinkAt(XPoint location)
         {
             return _htmlContainerInt.GetLinkAt(Utils.Convert(location));
         }
@@ -316,7 +318,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// <returns>the rectangle of the element or null if not found</returns>
         public XRect? GetElementRectangle(string elementId)
         {
-            var r = _htmlContainerInt.GetElementRectangle(elementId);
+            RRect? r = _htmlContainerInt.GetElementRectangle(elementId);
             return r.HasValue ? Utils.Convert(r.Value) : (XRect?)null;
         }
 
@@ -328,10 +330,8 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         {
             ArgChecker.AssertArgNotNull(g, "g");
 
-            using (var ig = new GraphicsAdapter(g))
-            {
-                _htmlContainerInt.PerformLayout(ig);
-            }
+            using GraphicsAdapter ig = new(g);
+            _htmlContainerInt.PerformLayout(ig);
         }
 
         /// <summary>
@@ -342,10 +342,8 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         {
             ArgChecker.AssertArgNotNull(g, "g");
 
-            using (var ig = new GraphicsAdapter(g))
-            {
-                _htmlContainerInt.PerformPaint(ig);
-            }
+            using GraphicsAdapter ig = new(g);
+            _htmlContainerInt.PerformPaint(ig);
         }
 
         public void Dispose()

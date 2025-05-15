@@ -19,7 +19,7 @@ using System.Windows.Forms;
 using TheArtOfDev.HtmlRenderer.Demo.Common;
 using TheArtOfDev.HtmlRenderer.PdfSharp;
 using TheArtOfDev.HtmlRenderer.WinForms;
-using PdfSharpCore;
+using PdfSharp;
 using System.Reflection;
 
 namespace TheArtOfDev.HtmlRenderer.Demo.WinForms

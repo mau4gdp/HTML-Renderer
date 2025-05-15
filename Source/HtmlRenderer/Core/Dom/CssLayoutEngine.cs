@@ -30,8 +30,8 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <param name="imageWord">the image word to measure</param>
         public static void MeasureImageSize(CssRectImage imageWord)
         {
-            ArgChecker.AssertArgNotNull(imageWord, "imageWord");
-            ArgChecker.AssertArgNotNull(imageWord.OwnerBox, "imageWord.OwnerBox");
+            ArgumentNullException.ThrowIfNull(imageWord, nameof(imageWord));
+            ArgumentNullException.ThrowIfNull(imageWord.OwnerBox, "imageWord.OwnerBox");
 
             var width = new CssLength(imageWord.OwnerBox.Width);
             var height = new CssLength(imageWord.OwnerBox.Height);
@@ -119,8 +119,8 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <param name="blockBox"></param>
         public static void CreateLineBoxes(RGraphics g, CssBox blockBox)
         {
-            ArgChecker.AssertArgNotNull(g, "g");
-            ArgChecker.AssertArgNotNull(blockBox, "blockBox");
+            ArgumentNullException.ThrowIfNull(g, nameof(g));
+            ArgumentNullException.ThrowIfNull(blockBox, nameof(blockBox));
 
             blockBox.LineBoxes.Clear();
 
@@ -137,7 +137,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             double maxBottom = starty;
 
             //First line box
-            CssLineBox line = new CssLineBox(blockBox);
+            CssLineBox line = new(blockBox);
 
             //Flow words and boxes
             FlowBox(g, blockBox, blockBox, limitRight, 0, startx, ref line, ref curx, ref cury, ref maxRight, ref maxBottom);
@@ -174,8 +174,8 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <param name="cell"></param>
         public static void ApplyCellVerticalAlignment(RGraphics g, CssBox cell)
         {
-            ArgChecker.AssertArgNotNull(g, "g");
-            ArgChecker.AssertArgNotNull(cell, "cell");
+            ArgumentNullException.ThrowIfNull(g, nameof(g));
+            ArgumentNullException.ThrowIfNull(cell, nameof(cell));
 
             if (cell.VerticalAlign == CssConstants.Top || cell.VerticalAlign == CssConstants.Baseline)
                 return;
@@ -391,7 +391,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         {
             if (box.Words.Count > 0)
             {
-                double x = Single.MaxValue, y = Single.MaxValue, r = Single.MinValue, b = Single.MinValue;
+                double x = float.MaxValue, y = float.MaxValue, r = float.MinValue, b = float.MinValue;
                 List<CssRect> words = line.WordsOf(box);
 
                 if (words.Count > 0)
@@ -401,7 +401,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
                         // handle if line is wrapped for the first text element where parent has left margin\padding
                         var left = word.Left;
 
-                        if (box == box.ParentBox.Boxes[0] && word == box.Words[0] && word == line.Words[0] && line != line.OwnerBox.LineBoxes[0] && !word.IsLineBreak)
+                        if (box == box.ParentBox?.Boxes[0] && word == box.Words[0] && word == line.Words[0] && line != line.OwnerBox.LineBoxes[0] && !word.IsLineBreak)
                             left -= box.ParentBox.ActualMarginLeft + box.ParentBox.ActualBorderLeftWidth + box.ParentBox.ActualPaddingLeft;
 
 
@@ -478,7 +478,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             if (line.Words.Count > 0)
             {
                 double left = line.Words[0].Left;
-                double right = line.Words[line.Words.Count - 1].Right;
+                double right = line.Words[^1].Right;
 
                 foreach (CssRect word in line.Words)
                 {
@@ -529,7 +529,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <param name="lineBox"></param>
         private static void ApplyVerticalAlignment(RGraphics g, CssLineBox lineBox)
         {
-            double baseline = Single.MinValue;
+            double baseline = float.MinValue;
             foreach (var box in lineBox.Rectangles.Keys)
             {
                 baseline = Math.Max(baseline, lineBox.Rectangles[box].Top);
@@ -577,7 +577,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <param name="lineBox"></param>
         private static void ApplyJustifyAlignment(RGraphics g, CssLineBox lineBox)
         {
-            if (lineBox.Equals(lineBox.OwnerBox.LineBoxes[lineBox.OwnerBox.LineBoxes.Count - 1]))
+            if (lineBox.Equals(lineBox.OwnerBox.LineBoxes[^1]))
                 return;
 
             double indent = lineBox.Equals(lineBox.OwnerBox.LineBoxes[0]) ? lineBox.OwnerBox.ActualTextIndent : 0f;
@@ -602,7 +602,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
                 word.Left = curx;
                 curx = word.Right + spacing;
 
-                if (word == lineBox.Words[lineBox.Words.Count - 1])
+                if (word == lineBox.Words[^1])
                 {
                     word.Left = lineBox.OwnerBox.ClientRight - word.Width;
                 }
@@ -619,7 +619,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             if (line.Words.Count == 0)
                 return;
 
-            CssRect lastWord = line.Words[line.Words.Count - 1];
+            CssRect lastWord = line.Words[^1];
             double right = line.OwnerBox.ActualRight - line.OwnerBox.ActualPaddingRight - line.OwnerBox.ActualBorderRightWidth;
             double diff = right - lastWord.Right - lastWord.OwnerBox.ActualBorderRightWidth - lastWord.OwnerBox.ActualPaddingRight;
             diff /= 2;
@@ -653,7 +653,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
                 return;
 
 
-            CssRect lastWord = line.Words[line.Words.Count - 1];
+            CssRect lastWord = line.Words[^1];
             double right = line.OwnerBox.ActualRight - line.OwnerBox.ActualPaddingRight - line.OwnerBox.ActualBorderRightWidth;
             double diff = right - lastWord.Right - lastWord.OwnerBox.ActualBorderRightWidth - lastWord.OwnerBox.ActualPaddingRight;
 
@@ -705,7 +705,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// </summary>
         private static List<T> ToList<T>(IEnumerable<T> collection)
         {
-            List<T> result = new List<T>();
+            List<T> result = new();
             foreach (T item in collection)
             {
                 result.Add(item);

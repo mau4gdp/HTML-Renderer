@@ -22,7 +22,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// <summary>
         /// List of html tags that don't have content
         /// </summary>
-        private static readonly List<string> _list = new List<string>(
+        private static readonly List<string> _list = new(
             new[]
             {
                 "area", "base", "basefont", "br", "col",
@@ -45,7 +45,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// <summary>
         /// the html decode only pairs
         /// </summary>
-        private static readonly Dictionary<string, char> _decodeOnly = new Dictionary<string, char>(StringComparer.InvariantCultureIgnoreCase);
+        private static readonly Dictionary<string, char> _decodeOnly = new(StringComparer.InvariantCultureIgnoreCase);
 
         #endregion
 
@@ -372,7 +372,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
 
                 string repl = string.Empty;
                 if (num >= 0 && num <= 0x10ffff && !(num >= 0xd800 && num <= 0xdfff))
-                    repl = Char.ConvertFromUtf32((int)num);
+                    repl = char.ConvertFromUtf32((int)num);
                 
                 str = str.Remove(idx, endIdx - idx);
                 str = str.Insert(idx, repl);
@@ -396,8 +396,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
                 if (endIdx > -1 && endIdx - idx < 8)
                 {
                     var key = str.Substring(idx + 1, endIdx - idx - 1);
-                    char c;
-                    if (_decodeOnly.TryGetValue(key, out c))
+                    if (_decodeOnly.TryGetValue(key, out char c))
                     {
                         str = str.Remove(idx, endIdx - idx + 1);
                         str = str.Insert(idx, c.ToString());

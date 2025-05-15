@@ -11,7 +11,7 @@
 // "The Art of War"
 
 using TheArtOfDev.HtmlRenderer.Adapters;
-using PdfSharpCore.Drawing;
+using PdfSharp.Drawing;
 
 namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
 {

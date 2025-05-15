@@ -32,7 +32,7 @@ namespace TheArtOfDev.HtmlRenderer.WPF.Adapters
         /// <summary>
         /// The wrapped WPF graphics object
         /// </summary>
-        private readonly DrawingContext _g;
+        private readonly DrawingContext? _g;
 
         /// <summary>
         /// if to release the graphics object on dispose
@@ -90,7 +90,7 @@ namespace TheArtOfDev.HtmlRenderer.WPF.Adapters
             _g.PushClip(geometry);
         }
 
-        public override Object SetAntiAliasSmoothingMode()
+        public override Object? SetAntiAliasSmoothingMode()
         {
             return null;
         }
@@ -233,7 +233,7 @@ namespace TheArtOfDev.HtmlRenderer.WPF.Adapters
         public override void Dispose()
         {
             if (_releaseGraphics)
-                _g.Close();
+                _g?.Close();
         }
 
 

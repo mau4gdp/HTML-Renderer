@@ -10,8 +10,7 @@
 // - Sun Tsu,
 // "The Art of War"
 
-using PdfSharpCore.Drawing;
-using System;
+using PdfSharp.Drawing;
 using TheArtOfDev.HtmlRenderer.Adapters;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
 using TheArtOfDev.HtmlRenderer.Core.Utils;
@@ -46,9 +45,11 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
 
         static GraphicsAdapter()
         {
-            _stringFormat = new XStringFormat();
-            _stringFormat.Alignment = XStringAlignment.Near;
-            _stringFormat.LineAlignment = XLineAlignment.Near;
+            _stringFormat = new XStringFormat
+            {
+                Alignment = XStringAlignment.Near,
+                LineAlignment = XLineAlignment.Near
+            };
         }
 
         /// <summary>
@@ -81,14 +82,14 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
         public override void PushClipExclude(RRect rect)
         { }
 
-        public override Object SetAntiAliasSmoothingMode()
+        public override object SetAntiAliasSmoothingMode()
         {
-            var prevMode = _g.SmoothingMode;
+            XSmoothingMode prevMode = _g.SmoothingMode;
             _g.SmoothingMode = XSmoothingMode.AntiAlias;
             return prevMode;
         }
 
-        public override void ReturnPreviousSmoothingMode(Object prevMode)
+        public override void ReturnPreviousSmoothingMode(object? prevMode)
         {
             if (prevMode != null)
             {
@@ -98,14 +99,14 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
 
         public override RSize MeasureString(string str, RFont font)
         {
-            var fontAdapter = (FontAdapter)font;
-            var realFont = fontAdapter.Font;
-            var size = _g.MeasureString(str, realFont, _stringFormat);
+            FontAdapter fontAdapter = (FontAdapter)font;
+            XFont realFont = fontAdapter.Font;
+            XSize size = _g.MeasureString(str, realFont, _stringFormat);
 
             if (font.Height < 0)
             {
-                var height = realFont.Height;
-                var descent = realFont.Size * realFont.FontFamily.GetCellDescent(realFont.Style) / realFont.FontFamily.GetEmHeight(realFont.Style);
+                int height = realFont.Height;
+                double descent = realFont.Size * realFont.FontFamily.GetCellDescent(realFont.Style) / realFont.FontFamily.GetEmHeight(realFont.Style);
                 fontAdapter.SetMetrics(height, (int)Math.Round((height - descent + 1f)));
             }
 
@@ -120,7 +121,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
 
         public override void DrawString(string str, RFont font, RColor color, RPoint point, RSize size, bool rtl)
         {
-            var xBrush = ((BrushAdapter)_adapter.GetSolidBrush(color)).Brush;
+            object xBrush = ((BrushAdapter)_adapter.GetSolidBrush(color)).Brush;
             _g.DrawString(str, ((FontAdapter)font).Font, (XBrush)xBrush, point.X, point.Y, _stringFormat);
         }
 
@@ -155,9 +156,8 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
 
         public override void DrawRectangle(RBrush brush, double x, double y, double width, double height)
         {
-            var xBrush = ((BrushAdapter)brush).Brush;
-            var xTextureBrush = xBrush as XTextureBrush;
-            if (xTextureBrush != null)
+            object xBrush = ((BrushAdapter)brush).Brush;
+            if (xBrush is XTextureBrush xTextureBrush)
             {
                 xTextureBrush.DrawRectangle(_g, x, y, width, height);
             }

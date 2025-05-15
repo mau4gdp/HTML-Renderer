@@ -122,10 +122,8 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
             var endIdx = source.IndexOf('>', tagIdx + 1);
             if (endIdx > 0)
             {
-                string tagName;
-                Dictionary<string, string> tagAttributes;
                 var length = endIdx - tagIdx + 1 - (source[endIdx - 1] == '/' ? 1 : 0);
-                if (ParseHtmlTag(source, tagIdx, length, out tagName, out tagAttributes))
+                if (ParseHtmlTag(source, tagIdx, length, out string tagName, out var tagAttributes))
                 {
                     if (!HtmlUtils.IsSingleTag(tagName) && curBox.ParentBox != null)
                     {
@@ -168,7 +166,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="name">return the name of the html tag</param>
         /// <param name="attributes">return the dictionary of tag attributes</param>
         /// <returns>true - the tag is closing tag, false - otherwise</returns>
-        private static bool ParseHtmlTag(string source, int idx, int length, out string name, out Dictionary<string, string> attributes)
+        private static bool ParseHtmlTag(string source, int idx, int length, out string name, out Dictionary<string, string>? attributes)
         {
             idx++;
             length = length - (source[idx + length - 3] == '/' ? 3 : 2);
@@ -187,7 +185,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                 spaceIdx++;
 
             // Get the name of the tag
-            name = source.Substring(idx, spaceIdx - idx).ToLower();
+            name = source[idx..spaceIdx].ToLower();
 
             attributes = null;
             if (!isClosing && idx + length > spaceIdx)
@@ -205,7 +203,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="idx">the start index of the tag attributes in the source</param>
         /// <param name="length">the length of the tag attributes from the start index in the source</param>
         /// <param name="attributes">return the dictionary of tag attributes</param>
-        private static void ExtractAttributes(string source, int idx, int length, out Dictionary<string, string> attributes)
+        private static void ExtractAttributes(string source, int idx, int length, out Dictionary<string, string>? attributes)
         {
             attributes = null;
 
@@ -221,7 +219,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
 
                 if (startIdx < idx + length)
                 {
-                    var key = source.Substring(startIdx, endIdx - startIdx);
+                    var key = source[startIdx..endIdx];
                     var value = "";
 
                     startIdx = endIdx + 1;
@@ -242,14 +240,13 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                         while (endIdx < idx + length && (hasPChar ? source[endIdx] != pChar : !char.IsWhiteSpace(source, endIdx)))
                             endIdx++;
 
-                        value = source.Substring(startIdx, endIdx - startIdx);
+                        value = source[startIdx..endIdx];
                         value = HtmlUtils.DecodeHtml(value);
                     }
 
                     if (key.Length != 0)
                     {
-                        if (attributes == null)
-                            attributes = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+                        attributes ??= new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
                         attributes[key.ToLower()] = value;
                     }
 

@@ -10,10 +10,9 @@
 // - Sun Tsu,
 // "The Art of War"
 
-using System;
+using PdfSharp.Drawing;
 using TheArtOfDev.HtmlRenderer.Adapters;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
-using PdfSharpCore.Drawing;
 
 namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
 {
@@ -25,7 +24,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
         /// <summary>
         /// The actual PdfSharp graphics path instance.
         /// </summary>
-        private readonly XGraphicsPath _graphicsPath = new XGraphicsPath();
+        private readonly XGraphicsPath _graphicsPath = new();
 
         /// <summary>
         /// the last point added to the path to begin next segment from
@@ -67,24 +66,14 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
         /// </summary>
         private static int GetStartAngle(Corner corner)
         {
-            int startAngle;
-            switch (corner)
+            var startAngle = corner switch
             {
-                case Corner.TopLeft:
-                    startAngle = 180;
-                    break;
-                case Corner.TopRight:
-                    startAngle = 270;
-                    break;
-                case Corner.BottomLeft:
-                    startAngle = 90;
-                    break;
-                case Corner.BottomRight:
-                    startAngle = 0;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("corner");
-            }
+                Corner.TopLeft => 180,
+                Corner.TopRight => 270,
+                Corner.BottomLeft => 90,
+                Corner.BottomRight => 0,
+                _ => throw new ArgumentOutOfRangeException(nameof(corner)),
+            };
             return startAngle;
         }
     }

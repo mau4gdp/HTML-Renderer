@@ -31,7 +31,7 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
         /// </summary>
         protected RControl(RAdapter adapter)
         {
-            ArgChecker.AssertArgNotNull(adapter, "adapter");
+            ArgumentNullException.ThrowIfNull(adapter, nameof(adapter));
             _adapter = adapter;
         }
 

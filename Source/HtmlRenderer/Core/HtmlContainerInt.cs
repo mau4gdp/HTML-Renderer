@@ -94,22 +94,22 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <summary>
         /// the root css box of the parsed html
         /// </summary>
-        private CssBox _root;
+        private CssBox? _root;
 
         /// <summary>
         /// list of all css boxes that have ":hover" selector on them
         /// </summary>
-        private List<HoverBoxBlock> _hoverBoxes;
+        private List<HoverBoxBlock>? _hoverBoxes;
 
         /// <summary>
         /// Handler for text selection in the html. 
         /// </summary>
-        private SelectionHandler _selectionHandler;
+        private SelectionHandler? _selectionHandler;
 
         /// <summary>
         /// Handler for downloading of images in the html
         /// </summary>
-        private ImageDownloader _imageDownloader;
+        private ImageDownloader? _imageDownloader;
 
         /// <summary>
         /// the text fore color use for selected text
@@ -124,7 +124,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <summary>
         /// the parsed stylesheet data used for handling the html
         /// </summary>
-        private CssData _cssData;
+        private CssData? _cssData;
 
         /// <summary>
         /// Is content selection is enabled for the rendered html (default - true).<br/>
@@ -207,7 +207,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// </summary>
         public HtmlContainerInt(RAdapter adapter)
         {
-            ArgChecker.AssertArgNotNull(adapter, "global");
+            ArgumentNullException.ThrowIfNull(adapter, "global");
 
             _adapter = adapter;
             _cssParser = new CssParser(adapter);
@@ -233,13 +233,13 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// Raised when the set html document has been fully loaded.<br/>
         /// Allows manipulation of the html dom, scroll position, etc.
         /// </summary>
-        public event EventHandler LoadComplete;
+        public event EventHandler? LoadComplete;
 
         /// <summary>
         /// Raised when the user clicks on a link in the html.<br/>
         /// Allows canceling the execution of the link.
         /// </summary>
-        public event EventHandler<HtmlLinkClickedEventArgs> LinkClicked;
+        public event EventHandler<HtmlLinkClickedEventArgs>? LinkClicked;
 
         /// <summary>
         /// Raised when html renderer requires refresh of the control hosting (invalidation and re-layout).
@@ -247,13 +247,13 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <remarks>
         /// There is no guarantee that the event will be raised on the main thread, it can be raised on thread-pool thread.
         /// </remarks>
-        public event EventHandler<HtmlRefreshEventArgs> Refresh;
+        public event EventHandler<HtmlRefreshEventArgs>? Refresh;
 
         /// <summary>
         /// Raised when Html Renderer request scroll to specific location.<br/>
         /// This can occur on document anchor click.
         /// </summary>
-        public event EventHandler<HtmlScrollEventArgs> ScrollChange;
+        public event EventHandler<HtmlScrollEventArgs>? ScrollChange;
 
         /// <summary>
         /// Raised when an error occurred during html rendering.<br/>
@@ -261,25 +261,25 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <remarks>
         /// There is no guarantee that the event will be raised on the main thread, it can be raised on thread-pool thread.
         /// </remarks>
-        public event EventHandler<HtmlRenderErrorEventArgs> RenderError;
+        public event EventHandler<HtmlRenderErrorEventArgs>? RenderError;
 
         /// <summary>
         /// Raised when a stylesheet is about to be loaded by file path or URI by link element.<br/>
         /// This event allows to provide the stylesheet manually or provide new source (file or Uri) to load from.<br/>
         /// If no alternative data is provided the original source will be used.<br/>
         /// </summary>
-        public event EventHandler<HtmlStylesheetLoadEventArgs> StylesheetLoad;
+        public event EventHandler<HtmlStylesheetLoadEventArgs>? StylesheetLoad;
 
         /// <summary>
         /// Raised when an image is about to be loaded by file path or URI.<br/>
         /// This event allows to provide the image manually, if not handled the image will be loaded from file or download from URI.
         /// </summary>
-        public event EventHandler<HtmlImageLoadEventArgs> ImageLoad;
+        public event EventHandler<HtmlImageLoadEventArgs>? ImageLoad;
 
         /// <summary>
         /// the parsed stylesheet data used for handling the html
         /// </summary>
-        public CssData CssData
+        public CssData? CssData
         {
             get { return _cssData; }
         }
@@ -460,23 +460,23 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <summary>
         /// Get the currently selected text segment in the html.
         /// </summary>
-        public string SelectedText
+        public string? SelectedText
         {
-            get { return _selectionHandler.GetSelectedText(); }
+            get { return _selectionHandler?.GetSelectedText(); }
         }
 
         /// <summary>
         /// Copy the currently selected html segment with style.
         /// </summary>
-        public string SelectedHtml
+        public string? SelectedHtml
         {
-            get { return _selectionHandler.GetSelectedHtml(); }
+            get { return _selectionHandler?.GetSelectedHtml(); }
         }
 
         /// <summary>
         /// the root css box of the parsed html
         /// </summary>
-        internal CssBox Root
+        internal CssBox? Root
         {
             get { return _root; }
         }
@@ -504,7 +504,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// </summary>
         /// <param name="htmlSource">the html to init with, init empty if not given</param>
         /// <param name="baseCssData">optional: the stylesheet to init with, init default if not given</param>
-        public void SetHtml(string htmlSource, CssData baseCssData = null)
+        public void SetHtml(string htmlSource, CssData? baseCssData = null)
         {
             Clear();
             if (!string.IsNullOrEmpty(htmlSource))
@@ -512,7 +512,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
                 _loadComplete = false;
                 _cssData = baseCssData ?? _adapter.DefaultCssData;
 
-                DomParser parser = new DomParser(_cssParser);
+                DomParser parser = new(_cssParser);
                 _root = parser.GenerateCssTree(htmlSource, this, ref _cssData);
                 if (_root != null)
                 {
@@ -532,12 +532,10 @@ namespace TheArtOfDev.HtmlRenderer.Core
                 _root.Dispose();
                 _root = null;
 
-                if (_selectionHandler != null)
-                    _selectionHandler.Dispose();
+                _selectionHandler?.Dispose();
                 _selectionHandler = null;
 
-                if (_imageDownloader != null)
-                    _imageDownloader.Dispose();
+                _imageDownloader?.Dispose();
                 _imageDownloader = null;
 
                 _hoverBoxes = null;
@@ -573,7 +571,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="location">the location to find the attribute at</param>
         /// <param name="attribute">the attribute key to get value by</param>
         /// <returns>found attribute value or null if not found</returns>
-        public string GetAttributeAt(RPoint location, string attribute)
+        public string? GetAttributeAt(RPoint location, string attribute)
         {
             ArgChecker.AssertArgNotNullOrEmpty(attribute, "attribute");
 
@@ -603,10 +601,10 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// </summary>
         /// <param name="location">the location to find the link at</param>
         /// <returns>css link href if exists or null</returns>
-        public string GetLinkAt(RPoint location)
+        public string? GetLinkAt(RPoint location)
         {
             var link = DomUtils.GetLinkBox(_root, OffsetByScroll(location));
-            return link != null ? link.HrefLink : null;
+            return link?.HrefLink;
         }
 
         /// <summary>
@@ -630,7 +628,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="g">Device context to draw</param>
         public void PerformLayout(RGraphics g)
         {
-            ArgChecker.AssertArgNotNull(g, "g");
+            ArgumentNullException.ThrowIfNull(g, nameof(g));
 
             _actualSize = RSize.Empty;
             if (_root != null)
@@ -651,9 +649,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
                 if (!_loadComplete)
                 {
                     _loadComplete = true;
-                    EventHandler handler = LoadComplete;
-                    if (handler != null)
-                        handler(this, EventArgs.Empty);
+                    LoadComplete?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
@@ -664,7 +660,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="g">the device to use to render</param>
         public void PerformPaint(RGraphics g)
         {
-            ArgChecker.AssertArgNotNull(g, "g");
+            ArgumentNullException.ThrowIfNull(g, nameof(g));
 
             if (MaxSize.Height > 0)
             {
@@ -675,10 +671,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
                 g.PushClip(new RRect(MarginLeft, MarginTop, PageSize.Width, PageSize.Height));
             }
 
-            if (_root != null)
-            {
-                _root.Paint(g);
-            }
+            _root?.Paint(g);
 
             g.PopClip();
         }
@@ -690,12 +683,11 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="location">the location of the mouse</param>
         public void HandleMouseDown(RControl parent, RPoint location)
         {
-            ArgChecker.AssertArgNotNull(parent, "parent");
+            ArgumentNullException.ThrowIfNull(parent, nameof(parent));
 
             try
             {
-                if (_selectionHandler != null)
-                    _selectionHandler.HandleMouseDown(parent, OffsetByScroll(location), IsMouseInContainer(location));
+                _selectionHandler?.HandleMouseDown(parent, OffsetByScroll(location), IsMouseInContainer(location));
             }
             catch (Exception ex)
             {
@@ -711,7 +703,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="e">the mouse event data</param>
         public void HandleMouseUp(RControl parent, RPoint location, RMouseEvent e)
         {
-            ArgChecker.AssertArgNotNull(parent, "parent");
+            ArgumentNullException.ThrowIfNull(parent, nameof(parent));
 
             try
             {
@@ -746,7 +738,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="location">the location of the mouse</param>
         public void HandleMouseDoubleClick(RControl parent, RPoint location)
         {
-            ArgChecker.AssertArgNotNull(parent, "parent");
+            ArgumentNullException.ThrowIfNull(parent, nameof(parent));
 
             try
             {
@@ -766,7 +758,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="location">the location of the mouse</param>
         public void HandleMouseMove(RControl parent, RPoint location)
         {
-            ArgChecker.AssertArgNotNull(parent, "parent");
+            ArgumentNullException.ThrowIfNull(parent, nameof(parent));
 
             try
             {
@@ -807,12 +799,11 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="parent">the control hosting the html to set cursor and invalidate</param>
         public void HandleMouseLeave(RControl parent)
         {
-            ArgChecker.AssertArgNotNull(parent, "parent");
+            ArgumentNullException.ThrowIfNull(parent, nameof(parent));
 
             try
             {
-                if (_selectionHandler != null)
-                    _selectionHandler.HandleMouseLeave(parent);
+                _selectionHandler?.HandleMouseLeave(parent);
             }
             catch (Exception ex)
             {
@@ -827,8 +818,8 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="e">the pressed key</param>
         public void HandleKeyDown(RControl parent, RKeyEvent e)
         {
-            ArgChecker.AssertArgNotNull(parent, "parent");
-            ArgChecker.AssertArgNotNull(e, "e");
+            ArgumentNullException.ThrowIfNull(parent, nameof(parent));
+            ArgumentNullException.ThrowIfNull(e, nameof(e));
 
             try
             {
@@ -861,9 +852,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         {
             try
             {
-                EventHandler<HtmlStylesheetLoadEventArgs> handler = StylesheetLoad;
-                if (handler != null)
-                    handler(this, args);
+                StylesheetLoad?.Invoke(this, args);
             }
             catch (Exception ex)
             {
@@ -879,9 +868,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         {
             try
             {
-                EventHandler<HtmlImageLoadEventArgs> handler = ImageLoad;
-                if (handler != null)
-                    handler(this, args);
+                ImageLoad?.Invoke(this, args);
             }
             catch (Exception ex)
             {
@@ -897,9 +884,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         {
             try
             {
-                EventHandler<HtmlRefreshEventArgs> handler = Refresh;
-                if (handler != null)
-                    handler(this, new HtmlRefreshEventArgs(layout));
+                Refresh?.Invoke(this, new HtmlRefreshEventArgs(layout));
             }
             catch (Exception ex)
             {
@@ -913,13 +898,11 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="type">the type of error to report</param>
         /// <param name="message">the error message</param>
         /// <param name="exception">optional: the exception that occured</param>
-        internal void ReportError(HtmlRenderErrorType type, string message, Exception exception = null)
+        internal void ReportError(HtmlRenderErrorType type, string message, Exception? exception = null)
         {
             try
             {
-                EventHandler<HtmlRenderErrorEventArgs> handler = RenderError;
-                if (handler != null)
-                    handler(this, new HtmlRenderErrorEventArgs(type, message, exception));
+                RenderError?.Invoke(this, new HtmlRenderErrorEventArgs(type, message, exception));
             }
             catch
             { }
@@ -933,10 +916,10 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="link">the link that was clicked</param>
         internal void HandleLinkClicked(RControl parent, RPoint location, CssBox link)
         {
-            EventHandler<HtmlLinkClickedEventArgs> clickHandler = LinkClicked;
+            var clickHandler = LinkClicked;
             if (clickHandler != null)
             {
-                var args = new HtmlLinkClickedEventArgs(link.HrefLink, link.HtmlTag.Attributes);
+                var args = new HtmlLinkClickedEventArgs(link.HrefLink, link.HtmlTag?.Attributes);
                 try
                 {
                     clickHandler(this, args);
@@ -953,10 +936,10 @@ namespace TheArtOfDev.HtmlRenderer.Core
             {
                 if (link.HrefLink.StartsWith("#") && link.HrefLink.Length > 1)
                 {
-                    EventHandler<HtmlScrollEventArgs> scrollHandler = ScrollChange;
+                    var scrollHandler = ScrollChange;
                     if (scrollHandler != null)
                     {
-                        var rect = GetElementRectangle(link.HrefLink.Substring(1));
+                        var rect = GetElementRectangle(link.HrefLink[1..]);
                         if (rect.HasValue)
                         {
                             scrollHandler(this, new HtmlScrollEventArgs(rect.Value.Location));
@@ -980,11 +963,10 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// <param name="block">the css block with the css data with the selector</param>
         internal void AddHoverBox(CssBox box, CssBlock block)
         {
-            ArgChecker.AssertArgNotNull(box, "box");
-            ArgChecker.AssertArgNotNull(block, "block");
+            ArgumentNullException.ThrowIfNull(box, nameof(box));
+            ArgumentNullException.ThrowIfNull(block, nameof(block));
 
-            if (_hoverBoxes == null)
-                _hoverBoxes = new List<HoverBoxBlock>();
+            _hoverBoxes ??= new List<HoverBoxBlock>();
 
             _hoverBoxes.Add(new HoverBoxBlock(box, block));
         }
@@ -993,7 +975,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         /// Get image downloader to be used to download images for the current html rendering.<br/>
         /// Lazy create single downloader to be used for all images in the current html.
         /// </summary>
-        internal ImageDownloader GetImageDownloader()
+        internal ImageDownloader? GetImageDownloader()
         {
             return _imageDownloader;
         }
@@ -1046,11 +1028,9 @@ namespace TheArtOfDev.HtmlRenderer.Core
                 }
 
                 _cssData = null;
-                if (_root != null)
-                    _root.Dispose();
+                _root?.Dispose();
                 _root = null;
-                if (_selectionHandler != null)
-                    _selectionHandler.Dispose();
+                _selectionHandler?.Dispose();
                 _selectionHandler = null;
             }
             catch

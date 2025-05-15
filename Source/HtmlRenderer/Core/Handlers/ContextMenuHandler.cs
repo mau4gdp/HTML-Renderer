@@ -85,22 +85,22 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <summary>
         /// the last context menu shown
         /// </summary>
-        private RContextMenu _contextMenu;
+        private RContextMenu? _contextMenu;
 
         /// <summary>
         /// the control that the context menu was shown on
         /// </summary>
-        private RControl _parentControl;
+        private RControl? _parentControl;
 
         /// <summary>
         /// the css rectangle that context menu shown on
         /// </summary>
-        private CssRect _currentRect;
+        private CssRect? _currentRect;
 
         /// <summary>
         /// the css link box that context menu shown on
         /// </summary>
-        private CssBox _currentLink;
+        private CssBox? _currentLink;
 
         #endregion
 
@@ -261,10 +261,10 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// </summary>
         /// <param name="selectionHandler">the selection handler linked to the context menu handler</param>
         /// <param name="htmlContainer">the html container the handler is on</param>
-        public ContextMenuHandler(SelectionHandler selectionHandler, HtmlContainerInt htmlContainer)
+        public ContextMenuHandler(SelectionHandler selectionHandler, HtmlContainerInt? htmlContainer)
         {
-            ArgChecker.AssertArgNotNull(selectionHandler, "selectionHandler");
-            ArgChecker.AssertArgNotNull(htmlContainer, "htmlContainer");
+            ArgumentNullException.ThrowIfNull(selectionHandler, nameof(selectionHandler));
+            ArgumentNullException.ThrowIfNull(htmlContainer, nameof(htmlContainer));
 
             _selectionHandler = selectionHandler;
             _htmlContainer = htmlContainer;
@@ -292,7 +292,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
                     bool isVideo = false;
                     if (link != null)
                     {
-                        isVideo = link is CssBoxFrame && ((CssBoxFrame)link).IsVideo;
+                        isVideo = link is CssBoxFrame frame && frame.IsVideo;
                         var linkExist = !string.IsNullOrEmpty(link.HrefLink);
                         _contextMenu.AddItem(isVideo ? _openVideo : _openLink, linkExist, OnOpenLinkClick);
                         if (_htmlContainer.IsSelectionEnabled)
@@ -355,8 +355,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         {
             try
             {
-                if (_contextMenu != null)
-                    _contextMenu.Dispose();
+                _contextMenu?.Dispose();
                 _contextMenu = null;
                 _parentControl = null;
                 _currentRect = null;
@@ -369,11 +368,11 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <summary>
         /// Handle link click.
         /// </summary>
-        private void OnOpenLinkClick(object sender, EventArgs eventArgs)
+        private void OnOpenLinkClick(object? sender, EventArgs eventArgs)
         {
             try
             {
-                _currentLink.HtmlContainer.HandleLinkClicked(_parentControl, _parentControl.MouseLocation, _currentLink);
+                _currentLink?.HtmlContainer?.HandleLinkClicked(_parentControl!, _parentControl!.MouseLocation, _currentLink);
             }
             catch (HtmlLinkClickedException)
             {
@@ -392,11 +391,11 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <summary>
         /// Copy the href of a link to clipboard.
         /// </summary>
-        private void OnCopyLinkClick(object sender, EventArgs eventArgs)
+        private void OnCopyLinkClick(object? sender, EventArgs eventArgs)
         {
             try
             {
-                _htmlContainer.Adapter.SetToClipboard(_currentLink.HrefLink);
+                _htmlContainer.Adapter.SetToClipboard(_currentLink!.HrefLink);
             }
             catch (Exception ex)
             {
@@ -411,12 +410,12 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <summary>
         /// Open save as dialog to save the image
         /// </summary>
-        private void OnSaveImageClick(object sender, EventArgs eventArgs)
+        private void OnSaveImageClick(object? sender, EventArgs eventArgs)
         {
             try
             {
-                var imageSrc = _currentRect.OwnerBox.GetAttribute("src");
-                _htmlContainer.Adapter.SaveToFile(_currentRect.Image, Path.GetFileName(imageSrc) ?? "image", Path.GetExtension(imageSrc) ?? "png");
+                var imageSrc = _currentRect!.OwnerBox.GetAttribute("src");
+                _htmlContainer.Adapter.SaveToFile(_currentRect.Image!, Path.GetFileName(imageSrc) ?? "image", Path.GetExtension(imageSrc) ?? "png");
             }
             catch (Exception ex)
             {
@@ -431,11 +430,11 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <summary>
         /// Copy the image source to clipboard.
         /// </summary>
-        private void OnCopyImageLinkClick(object sender, EventArgs eventArgs)
+        private void OnCopyImageLinkClick(object? sender, EventArgs eventArgs)
         {
             try
             {
-                _htmlContainer.Adapter.SetToClipboard(_currentRect.OwnerBox.GetAttribute("src"));
+                _htmlContainer.Adapter.SetToClipboard(_currentRect!.OwnerBox.GetAttribute("src"));
             }
             catch (Exception ex)
             {
@@ -450,11 +449,11 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <summary>
         /// Copy image object to clipboard.
         /// </summary>
-        private void OnCopyImageClick(object sender, EventArgs eventArgs)
+        private void OnCopyImageClick(object? sender, EventArgs eventArgs)
         {
             try
             {
-                _htmlContainer.Adapter.SetToClipboard(_currentRect.Image);
+                _htmlContainer.Adapter.SetToClipboard(_currentRect!.Image!);
             }
             catch (Exception ex)
             {
@@ -469,7 +468,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <summary>
         /// Copy selected text.
         /// </summary>
-        private void OnCopyClick(object sender, EventArgs eventArgs)
+        private void OnCopyClick(object? sender, EventArgs eventArgs)
         {
             try
             {
@@ -488,11 +487,11 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <summary>
         /// Select all text.
         /// </summary>
-        private void OnSelectAllClick(object sender, EventArgs eventArgs)
+        private void OnSelectAllClick(object? sender, EventArgs eventArgs)
         {
             try
             {
-                _selectionHandler.SelectAll(_parentControl);
+                _selectionHandler.SelectAll(_parentControl!);
             }
             catch (Exception ex)
             {

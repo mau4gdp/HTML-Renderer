@@ -42,7 +42,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <summary>
         /// If the word is selected this points to the selection handler for more data
         /// </summary>
-        private SelectionHandler _selection;
+        private SelectionHandler? _selection;
 
         #endregion
 
@@ -146,7 +146,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <summary>
         /// If the word is selected this points to the selection handler for more data
         /// </summary>
-        public SelectionHandler Selection
+        public SelectionHandler? Selection
         {
             get { return _selection; }
             set { _selection = value; }
@@ -171,7 +171,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <summary>
         /// Gets the image this words represents (if one exists)
         /// </summary>
-        public virtual RImage Image
+        public virtual RImage? Image
         {
             get { return null; }
             // ReSharper disable ValueParameterNotUsed
@@ -207,7 +207,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <summary>
         /// Gets the text of the word
         /// </summary>
-        public virtual string Text
+        public virtual string? Text
         {
             get { return null; }
         }
@@ -266,22 +266,22 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Format("{0} ({1} char{2})", Text.Replace(' ', '-').Replace("\n", "\\n"), Text.Length, Text.Length != 1 ? "s" : string.Empty);
+            return string.Format("{0} ({1} char{2})", Text?.Replace(' ', '-').Replace("\n", "\\n"), Text?.Length, Text?.Length != 1 ? "s" : string.Empty);
         }
 
         public bool BreakPage()
         {
-            var container = this.OwnerBox.HtmlContainer;
+            var container = OwnerBox.HtmlContainer;
 
-            if (this.Height >= container.PageSize.Height)
+            if (container == null || Height >= container.PageSize.Height)
                 return false;
 
-            var remTop = (this.Top - container.MarginTop) % container.PageSize.Height;
-            var remBottom = (this.Bottom - container.MarginTop) % container.PageSize.Height;
+            var remTop = (Top - container.MarginTop) % container.PageSize.Height;
+            var remBottom = (Bottom - container.MarginTop) % container.PageSize.Height;
 
             if (remTop > remBottom)
             {
-                this.Top += container.PageSize.Height - remTop + 1;
+                Top += container.PageSize.Height - remTop + 1;
                 return true;
             }
 

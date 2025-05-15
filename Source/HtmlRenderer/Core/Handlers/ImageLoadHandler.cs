@@ -52,17 +52,17 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <summary>
         /// callback raised when image load process is complete with image or without
         /// </summary>
-        private readonly ActionInt<RImage, RRect, bool> _loadCompleteCallback;
+        private readonly ActionInt<RImage?, RRect, bool> _loadCompleteCallback;
 
         /// <summary>
         /// Must be open as long as the image is in use
         /// </summary>
-        private FileStream _imageFileStream;
+        private FileStream? _imageFileStream;
 
         /// <summary>
         /// the image instance of the loaded image
         /// </summary>
-        private RImage _image;
+        private RImage? _image;
 
         /// <summary>
         /// the image rectangle restriction as returned from image load event
@@ -92,10 +92,10 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// </summary>
         /// <param name="htmlContainer">the container of the html to handle load image for</param>
         /// <param name="loadCompleteCallback">callback raised when image load process is complete with image or without</param>
-        public ImageLoadHandler(HtmlContainerInt htmlContainer, ActionInt<RImage, RRect, bool> loadCompleteCallback)
+        public ImageLoadHandler(HtmlContainerInt? htmlContainer, ActionInt<RImage?, RRect, bool> loadCompleteCallback)
         {
-            ArgChecker.AssertArgNotNull(htmlContainer, "htmlContainer");
-            ArgChecker.AssertArgNotNull(loadCompleteCallback, "loadCompleteCallback");
+            ArgumentNullException.ThrowIfNull(htmlContainer, nameof(htmlContainer));
+            ArgumentNullException.ThrowIfNull(loadCompleteCallback, nameof(loadCompleteCallback));
 
             _htmlContainer = htmlContainer;
             _loadCompleteCallback = loadCompleteCallback;
@@ -104,7 +104,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <summary>
         /// the image instance of the loaded image
         /// </summary>
-        public RImage Image
+        public RImage? Image
         {
             get { return _image; }
         }
@@ -131,7 +131,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <param name="src">the source of the image to load</param>
         /// <param name="attributes">the collection of attributes on the element to use in event</param>
         /// <returns>the image object (null if failed)</returns>
-        public void LoadImage(string src, Dictionary<string, string> attributes)
+        public void LoadImage(string? src, Dictionary<string, string>? attributes)
         {
             try
             {
@@ -183,7 +183,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <param name="path">the path to the image to load (file path or uri)</param>
         /// <param name="image">the image to load</param>
         /// <param name="imageRectangle">optional: limit to specific rectangle of the image and not all of it</param>
-        private void OnHtmlImageLoadEventCallback(string path, object image, RRect imageRectangle)
+        private void OnHtmlImageLoadEventCallback(string? path, object? image, RRect imageRectangle)
         {
             if (!_disposed)
             {
@@ -223,9 +223,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// </summary>
         /// <param name="src">the source that has the base64 encoded image</param>
         /// <returns>image from base64 data string or null if failed</returns>
-        private RImage GetImageFromData(string src)
+        private RImage? GetImageFromData(string src)
         {
-            var s = src.Substring(src.IndexOf(':') + 1).Split(new[] { ',' }, 2);
+            var s = src[(src.IndexOf(':') + 1)..].Split(new[] { ',' }, 2);
             if (s.Length == 2)
             {
                 int imagePartsCount = 0, base64PartsCount = 0;
@@ -326,13 +326,13 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         private void SetImageFromUrl(Uri source)
         {
             var filePath = CommonUtils.GetLocalfileName(source);
-            if (filePath.Exists && filePath.Length > 0)
+            if (filePath != null && filePath.Exists && filePath.Length > 0)
             {
                 SetImageFromFile(filePath);
             }
             else
             {
-                _htmlContainer.GetImageDownloader().DownloadImage(source, filePath.FullName, !_htmlContainer.AvoidAsyncImagesLoading, OnDownloadImageCompleted);
+                _htmlContainer?.GetImageDownloader()?.DownloadImage(source, filePath?.FullName ?? "", !_htmlContainer.AvoidAsyncImagesLoading, OnDownloadImageCompleted);
             }
         }
 
@@ -340,7 +340,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// On download image complete to local file use <see cref="LoadImageFromFile"/> to load the image file.<br/>
         /// If the download canceled do nothing, if failed report error.
         /// </summary>
-        private void OnDownloadImageCompleted(Uri imageUri, string filePath, Exception error, bool canceled)
+        private void OnDownloadImageCompleted(Uri imageUri, string filePath, Exception? error, bool canceled)
         {
             if (!canceled && !_disposed)
             {

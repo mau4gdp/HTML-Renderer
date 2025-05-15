@@ -23,7 +23,7 @@ namespace TheArtOfDev.HtmlRenderer.Adapters.Entities
         ///     Represents a new instance of the <see cref="RPoint" /> class with member data left uninitialized.
         /// </summary>
         /// <filterpriority>1</filterpriority>
-        public static readonly RPoint Empty = new RPoint();
+        public static readonly RPoint Empty = new();
 
         private double _x;
         private double _y;
@@ -251,9 +251,9 @@ namespace TheArtOfDev.HtmlRenderer.Adapters.Entities
         ///     The <see cref="T:System.Object" /> to test.
         /// </param>
         /// <filterpriority>1</filterpriority>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (!(obj is RPoint))
+            if (obj is not RPoint)
                 return false;
             var pointF = (RPoint)obj;
             if (pointF.X == X && pointF.Y == Y)

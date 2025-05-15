@@ -39,7 +39,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// </summary>
         public CssValueParser(RAdapter adapter)
         {
-            ArgChecker.AssertArgNotNull(adapter, "global");
+            ArgumentNullException.ThrowIfNull(adapter, "global");
 
             _adapter = adapter;
         }
@@ -101,14 +101,13 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                 string number = string.Empty;
                 if (value.EndsWith("%"))
                 {
-                    number = value.Substring(0, value.Length - 1);
+                    number = value[..^1];
                 }
                 else if (value.Length > 2)
                 {
-                    number = value.Substring(0, value.Length - 2);
+                    number = value[..^2];
                 }
-                double stub;
-                return double.TryParse(number, out stub);
+                return double.TryParse(number, out double stub);
             }
             return false;
         }
@@ -128,12 +127,11 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
 
             string toParse = number;
             bool isPercent = number.EndsWith("%");
-            double result;
 
             if (isPercent)
-                toParse = number.Substring(0, number.Length - 1);
+                toParse = number[..^1];
 
-            if (!double.TryParse(toParse, NumberStyles.Number, NumberFormatInfo.InvariantInfo, out result))
+            if (!double.TryParse(toParse, NumberStyles.Number, NumberFormatInfo.InvariantInfo, out double result))
             {
                 return 0f;
             }
@@ -167,7 +165,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="box"></param>
         /// <param name="defaultUnit"></param>
         /// <returns>the parsed length value with adjustments</returns>
-        public static double ParseLength(string length, double hundredPercent, CssBoxProperties box, string defaultUnit)
+        public static double ParseLength(string length, double hundredPercent, CssBoxProperties box, string? defaultUnit)
         {
             return ParseLength(length, hundredPercent, box.GetEmHeight(), defaultUnit, false, false);
         }
@@ -182,7 +180,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="fontAdjust">if the length is in pixels and the length is font related it needs to use 72/96 factor</param>
         /// <param name="returnPoints">Allows the return double to be in points. If false, result will be pixels</param>
         /// <returns>the parsed length value with adjustments</returns>
-        public static double ParseLength(string length, double hundredPercent, double emFactor, string defaultUnit, bool fontAdjust, bool returnPoints)
+        public static double ParseLength(string length, double hundredPercent, double emFactor, string? defaultUnit, bool fontAdjust, bool returnPoints)
         {
             //Return zero if no length specified, zero specified
             if (string.IsNullOrEmpty(length) || length == "0")
@@ -193,14 +191,13 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                 return ParseNumber(length, hundredPercent);
 
             //Get units of the length
-            bool hasUnit;
-            string unit = GetUnit(length, defaultUnit, out hasUnit);
+            string unit = GetUnit(length, defaultUnit, out bool hasUnit);
 
             //Factor will depend on the unit
             double factor;
 
             //Number of the length
-            string number = hasUnit ? length.Substring(0, length.Length - 2) : length;
+            string number = hasUnit ? length[..^2] : length;
 
             //TODO: Units behave different in paper and in screen!
             switch (unit)
@@ -246,7 +243,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <summary>
         /// Get the unit to use for the length, use default if no unit found in length string.
         /// </summary>
-        private static string GetUnit(string length, string defaultUnit, out bool hasUnit)
+        private static string GetUnit(string length, string? defaultUnit, out bool hasUnit)
         {
             var unit = length.Length >= 3 ? length.Substring(length.Length - 2, 2) : string.Empty;
             switch (unit)
@@ -263,7 +260,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                     break;
                 default:
                     hasUnit = false;
-                    unit = defaultUnit ?? String.Empty;
+                    unit = defaultUnit ?? string.Empty;
                     break;
             }
             return unit;
@@ -276,8 +273,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <returns>true - valid, false - invalid</returns>
         public bool IsColorValid(string colorValue)
         {
-            RColor color;
-            return TryGetColor(colorValue, 0, colorValue.Length, out color);
+            return TryGetColor(colorValue, 0, colorValue.Length, out RColor color);
         }
 
         /// <summary>
@@ -287,8 +283,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <returns>Color value</returns>
         public RColor GetActualColor(string colorValue)
         {
-            RColor color;
-            TryGetColor(colorValue, 0, colorValue.Length, out color);
+            TryGetColor(colorValue, 0, colorValue.Length, out RColor color);
             return color;
         }
 

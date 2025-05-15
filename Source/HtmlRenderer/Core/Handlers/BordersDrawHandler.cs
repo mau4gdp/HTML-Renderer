@@ -100,7 +100,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
             if (borderPath != null)
             {
                 // rounded border need special path
-                Object prevMode = null;
+                object? prevMode = null;
                 if (box.HtmlContainer != null && !box.HtmlContainer.AvoidGeometryAntialias && box.IsRounded)
                     prevMode = g.SetAntiAliasSmoothingMode();
 
@@ -200,9 +200,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <param name="b">Box which the border corresponds</param>
         /// <param name="r">the rectangle the border is enclosing</param>
         /// <returns>Beveled border path, null if there is no rounded corners</returns>
-        private static RGraphicsPath GetRoundedBorderPath(RGraphics g, Border border, CssBox b, RRect r)
+        private static RGraphicsPath? GetRoundedBorderPath(RGraphics g, Border border, CssBox b, RRect r)
         {
-            RGraphicsPath path = null;
+            RGraphicsPath? path = null;
             switch (border)
             {
                 case Border.Top:
@@ -314,7 +314,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
                 case Border.Left:
                     return style == CssConstants.Inset ? Darken(box.ActualBorderLeftColor) : box.ActualBorderLeftColor;
                 default:
-                    throw new ArgumentOutOfRangeException("border");
+                    throw new ArgumentOutOfRangeException(nameof(border));
             }
         }
 
@@ -334,7 +334,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
                 case Border.Left:
                     return box.ActualBorderLeftWidth;
                 default:
-                    throw new ArgumentOutOfRangeException("border");
+                    throw new ArgumentOutOfRangeException(nameof(border));
             }
         }
 
@@ -354,7 +354,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
                 case Border.Left:
                     return box.BorderLeftStyle;
                 default:
-                    throw new ArgumentOutOfRangeException("border");
+                    throw new ArgumentOutOfRangeException(nameof(border));
             }
         }
 

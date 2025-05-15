@@ -40,7 +40,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Entities
         /// <summary>
         /// additional selectors to used in hierarchy (p className1 > className2)
         /// </summary>
-        private readonly List<CssBlockSelectorItem> _selectors;
+        private readonly List<CssBlockSelectorItem>? _selectors;
 
         /// <summary>
         /// is the css block has :hover pseudo-class
@@ -57,10 +57,10 @@ namespace TheArtOfDev.HtmlRenderer.Core.Entities
         /// <param name="properties">the CSS block properties and values</param>
         /// <param name="selectors">optional: additional selectors to used in hierarchy</param>
         /// <param name="hover">optional: is the css block has :hover pseudo-class</param>
-        public CssBlock(string @class, Dictionary<string, string> properties, List<CssBlockSelectorItem> selectors = null, bool hover = false)
+        public CssBlock(string @class, Dictionary<string, string> properties, List<CssBlockSelectorItem>? selectors = null, bool hover = false)
         {
             ArgChecker.AssertArgNotNullOrEmpty(@class, "@class");
-            ArgChecker.AssertArgNotNull(properties, "properties");
+            ArgumentNullException.ThrowIfNull(properties, nameof(properties));
 
             _class = @class;
             _selectors = selectors;
@@ -79,7 +79,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Entities
         /// <summary>
         /// additional selectors to used in hierarchy (p className1 > className2)
         /// </summary>
-        public List<CssBlockSelectorItem> Selectors
+        public List<CssBlockSelectorItem>? Selectors
         {
             get { return _selectors; }
         }
@@ -107,7 +107,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Entities
         /// <param name="other">the css block to merge with</param>
         public void Merge(CssBlock other)
         {
-            ArgChecker.AssertArgNotNull(other, "other");
+            ArgumentNullException.ThrowIfNull(other, nameof(other));
 
             foreach (var prop in other._properties.Keys)
             {
@@ -196,9 +196,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Entities
         /// </summary>
         /// <param name="obj">the other block to compare to</param>
         /// <returns>true - the two blocks are the same, false - otherwise</returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
                 return false;
             if (ReferenceEquals(this, obj))
                 return true;

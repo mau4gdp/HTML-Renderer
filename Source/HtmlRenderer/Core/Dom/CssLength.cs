@@ -60,7 +60,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             string u = length.Substring(length.Length - 2, 2);
 
             //Number of the length
-            string number = length.Substring(0, length.Length - 2);
+            string number = length[..^2];
 
             //TODO: Units behave different in paper and in screen!
             switch (u)

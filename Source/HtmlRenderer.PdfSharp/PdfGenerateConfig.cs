@@ -10,8 +10,8 @@
 // - Sun Tsu,
 // "The Art of War"
 
-using PdfSharpCore;
-using PdfSharpCore.Drawing;
+using PdfSharp;
+using PdfSharp.Drawing;
 
 namespace TheArtOfDev.HtmlRenderer.PdfSharp
 {

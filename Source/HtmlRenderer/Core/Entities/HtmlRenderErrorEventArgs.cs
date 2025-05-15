@@ -32,7 +32,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Entities
         /// <summary>
         /// the exception that occurred (can be null)
         /// </summary>
-        private readonly Exception _exception;
+        private readonly Exception? _exception;
 
         /// <summary>
         /// Init.
@@ -40,7 +40,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Entities
         /// <param name="type">the type of error to report</param>
         /// <param name="message">the error message</param>
         /// <param name="exception">optional: the exception that occurred</param>
-        public HtmlRenderErrorEventArgs(HtmlRenderErrorType type, string message, Exception exception = null)
+        public HtmlRenderErrorEventArgs(HtmlRenderErrorType type, string message, Exception? exception = null)
         {
             _type = type;
             _message = message;
@@ -66,7 +66,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Entities
         /// <summary>
         /// the exception that occurred (can be null)
         /// </summary>
-        public Exception Exception
+        public Exception? Exception
         {
             get { return _exception; }
         }

@@ -10,9 +10,9 @@
 // - Sun Tsu,
 // "The Art of War"
 
-using PdfSharpCore;
-using PdfSharpCore.Drawing;
-using PdfSharpCore.Pdf;
+using PdfSharp;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 using System;
 using TheArtOfDev.HtmlRenderer.Core;
 using TheArtOfDev.HtmlRenderer.Core.Entities;
@@ -68,10 +68,12 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the generated image of the html</returns>
-        public static PdfDocument GeneratePdf(string html, PageSize pageSize, int margin = 20, CssData cssData = null, EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null)
+        public static PdfDocument GeneratePdf(string html, PageSize pageSize, int margin = 20, CssData? cssData = null, EventHandler<HtmlStylesheetLoadEventArgs>? stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs>? imageLoad = null)
         {
-            var config = new PdfGenerateConfig();
-            config.PageSize = pageSize;
+            PdfGenerateConfig config = new()
+            {
+                PageSize = pageSize
+            };
             config.SetMargins(margin);
             return GeneratePdf(html, config, cssData, stylesheetLoad, imageLoad);
         }
@@ -85,10 +87,10 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the generated image of the html</returns>
-        public static PdfDocument GeneratePdf(string html, PdfGenerateConfig config, CssData cssData = null, EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null)
+        public static PdfDocument GeneratePdf(string html, PdfGenerateConfig config, CssData? cssData = null, EventHandler<HtmlStylesheetLoadEventArgs>? stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs>? imageLoad = null)
         {
             // create PDF document to render the HTML into
-            var document = new PdfDocument();
+            PdfDocument document = new();
 
             // add rendered PDF pages to document
             AddPdfPages(document, html, config, cssData, stylesheetLoad, imageLoad);
@@ -107,10 +109,12 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the generated image of the html</returns>
-        public static void AddPdfPages(PdfDocument document, string html, PageSize pageSize, int margin = 20, CssData cssData = null, EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null)
+        public static void AddPdfPages(PdfDocument document, string html, PageSize pageSize, int margin = 20, CssData? cssData = null, EventHandler<HtmlStylesheetLoadEventArgs>? stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs>? imageLoad = null)
         {
-            var config = new PdfGenerateConfig();
-            config.PageSize = pageSize;
+            PdfGenerateConfig config = new()
+            {
+                PageSize = pageSize
+            };
             config.SetMargins(margin);
             AddPdfPages(document, html, config, cssData, stylesheetLoad, imageLoad);
         }
@@ -125,7 +129,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the generated image of the html</returns>
-        public static void AddPdfPages(PdfDocument document, string html, PdfGenerateConfig config, CssData cssData = null, EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null)
+        public static void AddPdfPages(PdfDocument document, string html, PdfGenerateConfig config, CssData? cssData = null, EventHandler<HtmlStylesheetLoadEventArgs>? stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs>? imageLoad = null)
         {
             XSize orgPageSize;
             // get the size of each page to layout the HTML in
@@ -140,54 +144,52 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
                 orgPageSize = new XSize(orgPageSize.Height, orgPageSize.Width);
             }
 
-            var pageSize = new XSize(orgPageSize.Width - config.MarginLeft - config.MarginRight, orgPageSize.Height - config.MarginTop - config.MarginBottom);
+            XSize pageSize = new(orgPageSize.Width - config.MarginLeft - config.MarginRight, orgPageSize.Height - config.MarginTop - config.MarginBottom);
 
             if (!string.IsNullOrEmpty(html))
             {
-                using (var container = new HtmlContainer())
+                using HtmlContainer container = new();
+                if (stylesheetLoad != null)
+                    container.StylesheetLoad += stylesheetLoad;
+                if (imageLoad != null)
+                    container.ImageLoad += imageLoad;
+
+                container.Location = new XPoint(config.MarginLeft, config.MarginTop);
+                container.MaxSize = new XSize(pageSize.Width, 0);
+                container.SetHtml(html, cssData);
+                container.PageSize = pageSize;
+                container.MarginBottom = config.MarginBottom;
+                container.MarginLeft = config.MarginLeft;
+                container.MarginRight = config.MarginRight;
+                container.MarginTop = config.MarginTop;
+
+                // layout the HTML with the page width restriction to know how many pages are required
+                using (XGraphics measure = XGraphics.CreateMeasureContext(pageSize, XGraphicsUnit.Point, XPageDirection.Downwards))
                 {
-                    if (stylesheetLoad != null)
-                        container.StylesheetLoad += stylesheetLoad;
-                    if (imageLoad != null)
-                        container.ImageLoad += imageLoad;
-
-                    container.Location = new XPoint(config.MarginLeft, config.MarginTop);
-                    container.MaxSize = new XSize(pageSize.Width, 0);
-                    container.SetHtml(html, cssData);
-                    container.PageSize = pageSize;
-                    container.MarginBottom = config.MarginBottom;
-                    container.MarginLeft = config.MarginLeft;
-                    container.MarginRight = config.MarginRight;
-                    container.MarginTop = config.MarginTop;
-
-                    // layout the HTML with the page width restriction to know how many pages are required
-                    using (var measure = XGraphics.CreateMeasureContext(pageSize, XGraphicsUnit.Point, XPageDirection.Downwards))
-                    {
-                        container.PerformLayout(measure);
-                    }
-
-                    // while there is un-rendered HTML, create another PDF page and render with proper offset for the next page
-                    double scrollOffset = 0;
-                    while (scrollOffset > -container.ActualSize.Height)
-                    {
-                        var page = document.AddPage();
-                        page.Height = orgPageSize.Height;
-                        page.Width = orgPageSize.Width;
-
-                        using (var g = XGraphics.FromPdfPage(page))
-                        {
-                            //g.IntersectClip(new XRect(config.MarginLeft, config.MarginTop, pageSize.Width, pageSize.Height));
-                            g.IntersectClip(new XRect(0, 0, page.Width, page.Height));
-
-                            container.ScrollOffset = new XPoint(0, scrollOffset);
-                            container.PerformPaint(g);
-                        }
-                        scrollOffset -= pageSize.Height;
-                    }
-
-                    // add web links and anchors
-                    HandleLinks(document, container, orgPageSize, pageSize);
+                    container.PerformLayout(measure);
                 }
+
+                // while there is un-rendered HTML, create another PDF page and render with proper offset for the next page
+                double scrollOffset = 0;
+                while (scrollOffset > -container.ActualSize.Height)
+                {
+                    PdfPage page = document.AddPage();
+                    page.Height = XUnit.FromPoint(orgPageSize.Height);
+                    page.Width = XUnit.FromPoint(orgPageSize.Width);
+
+                    using (XGraphics g = XGraphics.FromPdfPage(page))
+                    {
+                        //g.IntersectClip(new XRect(config.MarginLeft, config.MarginTop, pageSize.Width, pageSize.Height));
+                        g.IntersectClip(new XRect(0, 0, orgPageSize.Width, orgPageSize.Height));
+
+                        container.ScrollOffset = new XPoint(0, scrollOffset);
+                        container.PerformPaint(g);
+                    }
+                    scrollOffset -= pageSize.Height;
+                }
+
+                // add web links and anchors
+                HandleLinks(document, container, orgPageSize, pageSize);
             }
         }
 
@@ -200,20 +202,20 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp
         /// </summary>
         private static void HandleLinks(PdfDocument document, HtmlContainer container, XSize orgPageSize, XSize pageSize)
         {
-            foreach (var link in container.GetLinks())
+            foreach (LinkElementData<XRect> link in container.GetLinks())
             {
                 int i = (int)(link.Rectangle.Top / pageSize.Height);
                 for (; i < document.Pages.Count && pageSize.Height * i < link.Rectangle.Bottom; i++)
                 {
-                    var offset = pageSize.Height * i;
+                    double offset = pageSize.Height * i;
 
                     // fucking position is from the bottom of the page
-                    var xRect = new XRect(link.Rectangle.Left, orgPageSize.Height - (link.Rectangle.Height + link.Rectangle.Top - offset), link.Rectangle.Width, link.Rectangle.Height);
+                    XRect xRect = new(link.Rectangle.Left, orgPageSize.Height - (link.Rectangle.Height + link.Rectangle.Top - offset), link.Rectangle.Width, link.Rectangle.Height);
 
                     if (link.IsAnchor)
                     {
                         // create link to another page in the document
-                        var anchorRect = container.GetElementRectangle(link.AnchorId);
+                        XRect? anchorRect = container.GetElementRectangle(link.AnchorId);
                         if (anchorRect.HasValue)
                         {
                             // document links to the same page as the link is not allowed

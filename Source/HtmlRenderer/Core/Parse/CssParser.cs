@@ -56,7 +56,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// </summary>
         public CssParser(RAdapter adapter)
         {
-            ArgChecker.AssertArgNotNull(adapter, "global");
+            ArgumentNullException.ThrowIfNull(adapter, "global");
 
             _valueParser = new CssValueParser(adapter);
             _adapter = adapter;
@@ -91,9 +91,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// </summary>
         /// <param name="cssData">the CSS data to fill with parsed CSS objects</param>
         /// <param name="stylesheet">raw css stylesheet to parse</param>
-        public void ParseStyleSheet(CssData cssData, string stylesheet)
+        public void ParseStyleSheet(CssData cssData, string? stylesheet)
         {
-            if (!String.IsNullOrEmpty(stylesheet))
+            if (!string.IsNullOrEmpty(stylesheet))
             {
                 stylesheet = RemoveStylesheetComments(stylesheet);
 
@@ -109,7 +109,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="className">the name of the css class of the block</param>
         /// <param name="blockSource">the CSS block to parse</param>
         /// <returns>the created CSS block instance</returns>
-        public CssBlock ParseCssBlock(string className, string blockSource)
+        public CssBlock? ParseCssBlock(string className, string? blockSource)
         {
             return ParseCssBlockImp(className, blockSource);
         }
@@ -145,7 +145,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <returns>stylesheet without comments</returns>
         private static string RemoveStylesheetComments(string stylesheet)
         {
-            StringBuilder sb = null;
+            StringBuilder? sb = null;
 
             int prevIdx = 0, startIdx = 0;
             while (startIdx > -1 && startIdx < stylesheet.Length)
@@ -153,9 +153,8 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                 startIdx = stylesheet.IndexOf("/*", startIdx);
                 if (startIdx > -1)
                 {
-                    if (sb == null)
-                        sb = new StringBuilder(stylesheet.Length);
-                    sb.Append(stylesheet.Substring(prevIdx, startIdx - prevIdx));
+                    sb ??= new StringBuilder(stylesheet.Length);
+                    sb.Append(stylesheet[prevIdx..startIdx]);
 
                     var endIdx = stylesheet.IndexOf("*/", startIdx + 2);
                     if (endIdx < 0)
@@ -163,9 +162,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
 
                     prevIdx = startIdx = endIdx + 2;
                 }
-                else if (sb != null)
+                else
                 {
-                    sb.Append(stylesheet.Substring(prevIdx));
+                    sb?.Append(stylesheet[prevIdx..]);
                 }
             }
 
@@ -209,7 +208,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
 
                     if (endIdx < stylesheet.Length)
                     {
-                        while (Char.IsWhiteSpace(stylesheet[startIdx]))
+                        while (char.IsWhiteSpace(stylesheet[startIdx]))
                             startIdx++;
                         var substring = stylesheet.Substring(startIdx, endIdx - startIdx + 1);
                         FeedStyleBlock(cssData, substring);
@@ -228,7 +227,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         private void ParseMediaStyleBlocks(CssData cssData, string stylesheet)
         {
             int startIdx = 0;
-            string atrule;
+            string? atrule;
             while ((atrule = RegexParserUtils.GetCssAtRules(stylesheet, ref startIdx)) != null)
             {
                 //Just process @media rules
@@ -245,12 +244,12 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                     if (line.StartsWith("@media", StringComparison.InvariantCultureIgnoreCase) && line.EndsWith("{"))
                     {
                         //Get specified media types in the at-rule
-                        string[] media = line.Substring(6, line.Length - 7).Split(' ');
+                        string[] media = line[6..^1].Split(' ');
 
                         //Scan media types
                         foreach (string t in media)
                         {
-                            if (!String.IsNullOrEmpty(t.Trim()))
+                            if (!string.IsNullOrEmpty(t.Trim()))
                             {
                                 //Get blocks inside the at-rule
                                 var insideBlocks = RegexParserUtils.Match(RegexParserUtils.CssBlocks, atrule);
@@ -281,12 +280,12 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
             if (startIdx > -1 && endIdx > -1)
             {
                 string blockSource = block.Substring(startIdx + 1, endIdx - startIdx - 1);
-                var classes = block.Substring(0, startIdx).Split(',');
+                var classes = block[..startIdx].Split(',');
 
                 foreach (string cls in classes)
                 {
                     string className = cls.Trim(_cssClassTrimChars);
-                    if (!String.IsNullOrEmpty(className))
+                    if (!string.IsNullOrEmpty(className))
                     {
                         var newblock = ParseCssBlockImp(className, blockSource);
                         if (newblock != null)
@@ -304,25 +303,24 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="className">the name of the css class of the block</param>
         /// <param name="blockSource">the CSS block to parse</param>
         /// <returns>the created CSS block instance</returns>
-        private CssBlock ParseCssBlockImp(string className, string blockSource)
+        private CssBlock? ParseCssBlockImp(string className, string? blockSource)
         {
             className = className.ToLower();
-            string psedoClass = null;
+            string? psedoClass = null;
             var colonIdx = className.IndexOf(":", StringComparison.Ordinal);
             if (colonIdx > -1 && !className.StartsWith("::"))
             {
-                psedoClass = colonIdx < className.Length - 1 ? className.Substring(colonIdx + 1).Trim() : null;
-                className = className.Substring(0, colonIdx).Trim();
+                psedoClass = colonIdx < className.Length - 1 ? className[(colonIdx + 1)..].Trim() : null;
+                className = className[..colonIdx].Trim();
             }
 
             if (!string.IsNullOrEmpty(className) && (psedoClass == null || psedoClass == "link" || psedoClass == "hover"))
             {
-                string firstClass;
-                var selectors = ParseCssBlockSelector(className, out firstClass);
+                var selectors = ParseCssBlockSelector(className, out var firstClass);
 
                 var properties = ParseCssBlockProperties(blockSource);
 
-                return new CssBlock(firstClass, properties, selectors, psedoClass == "hover");
+                return new CssBlock(firstClass ?? "", properties, selectors, psedoClass == "hover");
             }
 
             return null;
@@ -334,9 +332,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="className">the class selector to parse</param>
         /// <param name="firstClass">return the main class the css block is on</param>
         /// <returns>returns the hierarchy of classes or null if single class selector</returns>
-        private static List<CssBlockSelectorItem> ParseCssBlockSelector(string className, out string firstClass)
+        private static List<CssBlockSelectorItem>? ParseCssBlockSelector(string className, out string? firstClass)
         {
-            List<CssBlockSelectorItem> selectors = null;
+            List<CssBlockSelectorItem>? selectors = null;
 
             firstClass = null;
             int endIdx = className.Length - 1;
@@ -355,8 +353,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
 
                 if (startIdx > -1)
                 {
-                    if (selectors == null)
-                        selectors = new List<CssBlockSelectorItem>();
+                    selectors ??= new List<CssBlockSelectorItem>();
 
                     var subclass = className.Substring(startIdx + 1, endIdx - startIdx);
 
@@ -373,7 +370,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                 }
                 else if (firstClass != null)
                 {
-                    selectors.Add(new CssBlockSelectorItem(className.Substring(0, endIdx + 1), directParent));
+                    selectors?.Add(new CssBlockSelectorItem(className[..(endIdx + 1)], directParent));
                 }
 
                 endIdx = startIdx;
@@ -388,40 +385,41 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// </summary>
         /// <param name="blockSource">the raw css block to parse</param>
         /// <returns>dictionary with parsed css block properties</returns>
-        private Dictionary<string, string> ParseCssBlockProperties(string blockSource)
+        private Dictionary<string, string> ParseCssBlockProperties(string? blockSource)
         {
             var properties = new Dictionary<string, string>();
             int startIdx = 0;
-            while (startIdx < blockSource.Length)
-            {
-                int endIdx = blockSource.IndexOfAny(_cssBlockSplitters, startIdx);
-
-                // If blockSource contains "data:image" then skip first semicolon since it is a part of image definition
-                // example: "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA......"
-                if (startIdx >= 0 && endIdx - startIdx >= 10 && blockSource.Length - startIdx >= 10 && blockSource.IndexOf("data:image", startIdx, endIdx - startIdx) >= 0)
-                    endIdx = blockSource.IndexOfAny(_cssBlockSplitters, endIdx + 1);
-
-                if (endIdx < 0)
-                    endIdx = blockSource.Length - 1;
-
-                var splitIdx = blockSource.IndexOf(':', startIdx, endIdx - startIdx);
-                if (splitIdx > -1)
+            if (blockSource != null)
+                while (startIdx < blockSource.Length)
                 {
-                    //Extract property name and value
-                    startIdx = startIdx + (blockSource[startIdx] == ' ' ? 1 : 0);
-                    var adjEndIdx = endIdx - (blockSource[endIdx] == ' ' || blockSource[endIdx] == ';' ? 1 : 0);
-                    string propName = blockSource.Substring(startIdx, splitIdx - startIdx).Trim().ToLower();
-                    splitIdx = splitIdx + (blockSource[splitIdx + 1] == ' ' ? 2 : 1);
-                    if (adjEndIdx >= splitIdx)
+                    int endIdx = blockSource.IndexOfAny(_cssBlockSplitters, startIdx);
+
+                    // If blockSource contains "data:image" then skip first semicolon since it is a part of image definition
+                    // example: "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA......"
+                    if (startIdx >= 0 && endIdx - startIdx >= 10 && blockSource.Length - startIdx >= 10 && blockSource.IndexOf("data:image", startIdx, endIdx - startIdx) >= 0)
+                        endIdx = blockSource.IndexOfAny(_cssBlockSplitters, endIdx + 1);
+
+                    if (endIdx < 0)
+                        endIdx = blockSource.Length - 1;
+
+                    var splitIdx = blockSource.IndexOf(':', startIdx, endIdx - startIdx);
+                    if (splitIdx > -1)
                     {
-                        string propValue = blockSource.Substring(splitIdx, adjEndIdx - splitIdx + 1).Trim();
-                        if (!propValue.StartsWith("url", StringComparison.InvariantCultureIgnoreCase))
-                            propValue = propValue.ToLower();
-                        AddProperty(propName, propValue, properties);
+                        //Extract property name and value
+                        startIdx = startIdx + (blockSource[startIdx] == ' ' ? 1 : 0);
+                        var adjEndIdx = endIdx - (blockSource[endIdx] == ' ' || blockSource[endIdx] == ';' ? 1 : 0);
+                        string propName = blockSource[startIdx..splitIdx].Trim().ToLower();
+                        splitIdx = splitIdx + (blockSource[splitIdx + 1] == ' ' ? 2 : 1);
+                        if (adjEndIdx >= splitIdx)
+                        {
+                            string propValue = blockSource.Substring(splitIdx, adjEndIdx - splitIdx + 1).Trim();
+                            if (!propValue.StartsWith("url", StringComparison.InvariantCultureIgnoreCase))
+                                propValue = propValue.ToLower();
+                            AddProperty(propName, propValue, properties);
+                        }
                     }
+                    startIdx = endIdx + 1;
                 }
-                startIdx = endIdx + 1;
-            }
             return properties;
         }
 
@@ -542,31 +540,30 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="properties">the properties collection to add the specific properties to</param>
         private void ParseFontProperty(string propValue, Dictionary<string, string> properties)
         {
-            int mustBePos;
-            string mustBe = RegexParserUtils.Search(RegexParserUtils.CssFontSizeAndLineHeight, propValue, out mustBePos);
+            var mustBe = RegexParserUtils.Search(RegexParserUtils.CssFontSizeAndLineHeight, propValue, out int mustBePos);
 
             if (!string.IsNullOrEmpty(mustBe))
             {
                 mustBe = mustBe.Trim();
                 //Check for style||variant||weight on the left
-                string leftSide = propValue.Substring(0, mustBePos);
-                string fontStyle = RegexParserUtils.Search(RegexParserUtils.CssFontStyle, leftSide);
-                string fontVariant = RegexParserUtils.Search(RegexParserUtils.CssFontVariant, leftSide);
-                string fontWeight = RegexParserUtils.Search(RegexParserUtils.CssFontWeight, leftSide);
+                string leftSide = propValue[..mustBePos];
+                var fontStyle = RegexParserUtils.Search(RegexParserUtils.CssFontStyle, leftSide);
+                var fontVariant = RegexParserUtils.Search(RegexParserUtils.CssFontVariant, leftSide);
+                var fontWeight = RegexParserUtils.Search(RegexParserUtils.CssFontWeight, leftSide);
 
                 //Check for family on the right
-                string rightSide = propValue.Substring(mustBePos + mustBe.Length);
+                string rightSide = propValue[(mustBePos + mustBe.Length)..];
                 string fontFamily = rightSide.Trim(); //Parser.Search(Parser.CssFontFamily, rightSide); //TODO: Would this be right?
 
                 //Check for font-size and line-height
                 string fontSize = mustBe;
                 string lineHeight = string.Empty;
 
-                if (mustBe.Contains("/") && mustBe.Length > mustBe.IndexOf("/", StringComparison.Ordinal) + 1)
+                if (mustBe.Contains('/') && mustBe.Length > mustBe.IndexOf("/", StringComparison.Ordinal) + 1)
                 {
                     int slashPos = mustBe.IndexOf("/", StringComparison.Ordinal);
-                    fontSize = mustBe.Substring(0, slashPos);
-                    lineHeight = mustBe.Substring(slashPos + 1);
+                    fontSize = mustBe[..slashPos];
+                    lineHeight = mustBe[(slashPos + 1)..];
                 }
 
                 if (!string.IsNullOrEmpty(fontFamily))
@@ -655,12 +652,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="propValue">the value of the property to parse to specific values</param>
         /// <param name="direction">the left, top, right or bottom direction of the border to parse</param>
         /// <param name="properties">the properties collection to add the specific properties to</param>
-        private void ParseBorderProperty(string propValue, string direction, Dictionary<string, string> properties)
+        private void ParseBorderProperty(string propValue, string? direction, Dictionary<string, string> properties)
         {
-            string borderWidth;
-            string borderStyle;
-            string borderColor;
-            ParseBorder(propValue, out borderWidth, out borderStyle, out borderColor);
+            ParseBorder(propValue, out var borderWidth, out var borderStyle, out var borderColor);
 
             if (direction != null)
             {
@@ -689,8 +683,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="properties">the properties collection to add the specific properties to</param>
         private static void ParseMarginProperty(string propValue, Dictionary<string, string> properties)
         {
-            string bottom, top, left, right;
-            SplitMultiDirectionValues(propValue, out left, out top, out right, out bottom);
+            SplitMultiDirectionValues(propValue, out var left, out var top, out var right, out var bottom);
 
             if (left != null)
                 properties["margin-left"] = left;
@@ -709,8 +702,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="properties">the properties collection to add the specific properties to</param>
         private static void ParseBorderStyleProperty(string propValue, Dictionary<string, string> properties)
         {
-            string bottom, top, left, right;
-            SplitMultiDirectionValues(propValue, out left, out top, out right, out bottom);
+            SplitMultiDirectionValues(propValue, out var left, out var top, out var right, out var bottom);
 
             if (left != null)
                 properties["border-left-style"] = left;
@@ -729,8 +721,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="properties">the properties collection to add the specific properties to</param>
         private static void ParseBorderWidthProperty(string propValue, Dictionary<string, string> properties)
         {
-            string bottom, top, left, right;
-            SplitMultiDirectionValues(propValue, out left, out top, out right, out bottom);
+            SplitMultiDirectionValues(propValue, out var left, out var top, out var right, out var bottom);
 
             if (left != null)
                 properties["border-left-width"] = left;
@@ -749,8 +740,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="properties">the properties collection to add the specific properties to</param>
         private static void ParseBorderColorProperty(string propValue, Dictionary<string, string> properties)
         {
-            string bottom, top, left, right;
-            SplitMultiDirectionValues(propValue, out left, out top, out right, out bottom);
+            SplitMultiDirectionValues(propValue, out var left, out var top, out var right, out var bottom);
 
             if (left != null)
                 properties["border-left-color"] = left;
@@ -769,8 +759,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="properties">the properties collection to add the specific properties to</param>
         private static void ParsePaddingProperty(string propValue, Dictionary<string, string> properties)
         {
-            string bottom, top, left, right;
-            SplitMultiDirectionValues(propValue, out left, out top, out right, out bottom);
+            SplitMultiDirectionValues(propValue, out var left, out var top, out var right, out var bottom);
 
             if (left != null)
                 properties["padding-left"] = left;
@@ -785,7 +774,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <summary>
         /// Split multi direction value into the proper direction values (left, top, right, bottom).
         /// </summary>
-        private static void SplitMultiDirectionValues(string propValue, out string left, out string top, out string right, out string bottom)
+        private static void SplitMultiDirectionValues(string propValue, out string? left, out string? top, out string? right, out string? bottom)
         {
             top = null;
             left = null;
@@ -828,7 +817,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
             if (!string.IsNullOrEmpty(value))
             {
                 string[] values = value.Split(separator);
-                List<string> result = new List<string>();
+                List<string> result = new();
 
                 foreach (string t in values)
                 {
@@ -853,21 +842,17 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="width"> </param>
         /// <param name="style"></param>
         /// <param name="color"></param>
-        public void ParseBorder(string value, out string width, out string style, out string color)
+        public void ParseBorder(string value, out string? width, out string? style, out string? color)
         {
             width = style = color = null;
             if (!string.IsNullOrEmpty(value))
             {
                 int idx = 0;
-                int length;
-                while ((idx = CommonUtils.GetNextSubString(value, idx, out length)) > -1)
+                while ((idx = CommonUtils.GetNextSubString(value, idx, out int length)) > -1)
                 {
-                    if (width == null)
-                        width = ParseBorderWidth(value, idx, length);
-                    if (style == null)
-                        style = ParseBorderStyle(value, idx, length);
-                    if (color == null)
-                        color = ParseBorderColor(value, idx, length);
+                    width ??= ParseBorderWidth(value, idx, length);
+                    style ??= ParseBorderStyle(value, idx, length);
+                    color ??= ParseBorderColor(value, idx, length);
                     idx = idx + length + 1;
                 }
             }
@@ -878,11 +863,11 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// Assume given substring is not empty and all indexes are valid!<br/>
         /// </summary>
         /// <returns>found border width value or null</returns>
-        private static string ParseBorderWidth(string str, int idx, int length)
+        private static string? ParseBorderWidth(string str, int idx, int length)
         {
             if ((length > 2 && char.IsDigit(str[idx])) || (length > 3 && str[idx] == '.'))
             {
-                string unit = null;
+                string? unit = null;
                 if (CommonUtils.SubStringEquals(str, idx + length - 2, 2, CssConstants.Px))
                     unit = CssConstants.Px;
                 else if (CommonUtils.SubStringEquals(str, idx + length - 2, 2, CssConstants.Pt))
@@ -923,7 +908,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// Assume given substring is not empty and all indexes are valid!<br/>
         /// </summary>
         /// <returns>found border width value or null</returns>
-        private static string ParseBorderStyle(string str, int idx, int length)
+        private static string? ParseBorderStyle(string str, int idx, int length)
         {
             if (CommonUtils.SubStringEquals(str, idx, length, CssConstants.None))
                 return CssConstants.None;
@@ -953,10 +938,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// Assume given substring is not empty and all indexes are valid!<br/>
         /// </summary>
         /// <returns>found border width value or null</returns>
-        private string ParseBorderColor(string str, int idx, int length)
+        private string? ParseBorderColor(string str, int idx, int length)
         {
-            RColor color;
-            return _valueParser.TryGetColor(str, idx, length, out color) ? str.Substring(idx, length) : null;
+            return _valueParser.TryGetColor(str, idx, length, out RColor color) ? str.Substring(idx, length) : null;
         }
 
         #endregion

@@ -10,7 +10,7 @@
 // - Sun Tsu,
 // "The Art of War"
 
-using PdfSharpCore.Drawing;
+using PdfSharp.Drawing;
 
 namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
 {
@@ -54,7 +54,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
         /// </summary>
         public void DrawRectangle(XGraphics g, double x, double y, double width, double height)
         {
-            var prevState = g.Save();
+            XGraphicsState prevState = g.Save();
             g.IntersectClip(new XRect(x, y, width, height));
 
             double rx = _translateTransformLocation.X;

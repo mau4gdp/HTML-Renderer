@@ -137,7 +137,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <returns></returns>
         internal List<CssRect> WordsOf(CssBox box)
         {
-            List<CssRect> r = new List<CssRect>();
+            List<CssRect> r = new();
 
             foreach (CssRect word in Words)
                 if (word.OwnerBox.Equals(box))
@@ -227,7 +227,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             }
             else
             {
-                CssRect firstw = b.FirstWordOccourence(b, this);
+                var firstw = b.FirstWordOccourence(b, this);
 
                 if (firstw != null)
                 {
@@ -245,7 +245,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             {
                 //Do this only if rectangle is shorter than parent's
                 double recttop = newtop - gap;
-                RRect newr = new RRect(r.X, recttop, r.Width, r.Height);
+                RRect newr = new(r.X, recttop, r.Width, r.Height);
                 Rectangles[b] = newr;
                 b.OffsetRectangle(this, gap);
             }
@@ -282,12 +282,12 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <returns></returns>
         public override string ToString()
         {
-            string[] ws = new string[Words.Count];
-            for (int i = 0; i < ws.Length; i++)
-            {
-                ws[i] = Words[i].Text;
-            }
-            return string.Join(" ", ws);
+            //string[] ws = new string[Words.Count];
+            //for (int i = 0; i < ws.Length; i++)
+            //{
+            //    ws[i] = Words[i].Text;
+            //}
+            return string.Join(" ", Words.Select(x=>x.Text));
         }
     }
 }

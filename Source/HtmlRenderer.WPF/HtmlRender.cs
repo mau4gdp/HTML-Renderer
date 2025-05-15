@@ -134,8 +134,8 @@ namespace TheArtOfDev.HtmlRenderer.WPF
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the size required for the html</returns>
-        public static Size Measure(string html, double maxWidth = 0, CssData cssData = null,
-            EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null)
+        public static Size Measure(string html, double maxWidth = 0, CssData? cssData = null,
+            EventHandler<HtmlStylesheetLoadEventArgs>? stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs>? imageLoad = null)
         {
             Size actualSize = Size.Empty;
             if (!string.IsNullOrEmpty(html))
@@ -175,8 +175,8 @@ namespace TheArtOfDev.HtmlRenderer.WPF
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the actual size of the rendered html</returns>
-        public static Size Render(DrawingContext g, string html, double left = 0, double top = 0, double maxWidth = 0, CssData cssData = null,
-            EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null)
+        public static Size Render(DrawingContext g, string html, double left = 0, double top = 0, double maxWidth = 0, CssData? cssData = null,
+            EventHandler<HtmlStylesheetLoadEventArgs>? stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs>? imageLoad = null)
         {
             ArgChecker.AssertArgNotNull(g, "g");
             return RenderClip(g, html, new Point(left, top), new Size(maxWidth, 0), cssData, stylesheetLoad, imageLoad);
@@ -198,8 +198,8 @@ namespace TheArtOfDev.HtmlRenderer.WPF
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the actual size of the rendered html</returns>
-        public static Size Render(DrawingContext g, string html, Point location, Size maxSize, CssData cssData = null,
-            EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null)
+        public static Size Render(DrawingContext g, string html, Point location, Size maxSize, CssData? cssData = null,
+            EventHandler<HtmlStylesheetLoadEventArgs>? stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs>? imageLoad = null)
         {
             ArgChecker.AssertArgNotNull(g, "g");
             return RenderClip(g, html, location, maxSize, cssData, stylesheetLoad, imageLoad);
@@ -215,8 +215,8 @@ namespace TheArtOfDev.HtmlRenderer.WPF
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the generated image of the html</returns>
-        public static BitmapFrame RenderToImage(string html, Size size, CssData cssData = null,
-            EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null)
+        public static BitmapFrame RenderToImage(string html, Size size, CssData? cssData = null,
+            EventHandler<HtmlStylesheetLoadEventArgs>? stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs>? imageLoad = null)
         {
             var renderTarget = new RenderTargetBitmap((int)size.Width, (int)size.Height, 96, 96, PixelFormats.Pbgra32);
 
@@ -255,8 +255,8 @@ namespace TheArtOfDev.HtmlRenderer.WPF
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the generated image of the html</returns>
-        public static BitmapFrame RenderToImage(string html, int maxWidth = 0, int maxHeight = 0, Color backgroundColor = new Color(), CssData cssData = null,
-            EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null)
+        public static BitmapFrame RenderToImage(string html, int maxWidth = 0, int maxHeight = 0, Color backgroundColor = new Color(), CssData? cssData = null,
+            EventHandler<HtmlStylesheetLoadEventArgs>? stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs>? imageLoad = null)
         {
             return RenderToImage(html, Size.Empty, new Size(maxWidth, maxHeight), backgroundColor, cssData, stylesheetLoad, imageLoad);
         }
@@ -281,8 +281,8 @@ namespace TheArtOfDev.HtmlRenderer.WPF
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the generated image of the html</returns>
-        public static BitmapFrame RenderToImage(string html, Size minSize, Size maxSize, Color backgroundColor = new Color(), CssData cssData = null,
-            EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null)
+        public static BitmapFrame RenderToImage(string html, Size minSize, Size maxSize, Color backgroundColor = new Color(), CssData? cssData = null,
+            EventHandler<HtmlStylesheetLoadEventArgs>? stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs>? imageLoad = null)
         {
             RenderTargetBitmap renderTarget;
             if (!string.IsNullOrEmpty(html))

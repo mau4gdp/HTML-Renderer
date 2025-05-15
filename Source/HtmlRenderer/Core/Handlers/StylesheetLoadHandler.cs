@@ -35,9 +35,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <param name="attributes">the attributes of the link element</param>
         /// <param name="stylesheet">return the stylesheet string that has been loaded (null if failed or <paramref name="stylesheetData"/> is given)</param>
         /// <param name="stylesheetData">return stylesheet data object that was provided by overwrite (null if failed or <paramref name="stylesheet"/> is given)</param>
-        public static void LoadStylesheet(HtmlContainerInt htmlContainer, string src, Dictionary<string, string> attributes, out string stylesheet, out CssData stylesheetData)
+        public static void LoadStylesheet(HtmlContainerInt htmlContainer, string src, Dictionary<string, string>? attributes, out string? stylesheet, out CssData? stylesheetData)
         {
-            ArgChecker.AssertArgNotNull(htmlContainer, "htmlContainer");
+            ArgumentNullException.ThrowIfNull(htmlContainer, nameof(htmlContainer));
 
             stylesheet = null;
             stylesheetData = null;
@@ -129,9 +129,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <returns>the loaded stylesheet string</returns>
         private static string LoadStylesheetFromUri(HtmlContainerInt htmlContainer, Uri uri)
         {
-            using (var client = new WebClient())
+            using (var client = new HttpClient())
             {
-                var stylesheet = client.DownloadString(uri);
+                var stylesheet = client.GetStringAsync(uri).Result;
                 try
                 {
                     stylesheet = CorrectRelativeUrls(stylesheet, uri);
@@ -164,8 +164,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
                         var offset1 = 4 + (stylesheet[idx + 4] == '\'' ? 1 : 0);
                         var offset2 = (stylesheet[endIdx - 1] == '\'' ? 1 : 0);
                         var urlStr = stylesheet.Substring(idx + offset1, endIdx - idx - offset1 - offset2);
-                        Uri url;
-                        if (Uri.TryCreate(urlStr, UriKind.Relative, out url))
+                        if (Uri.TryCreate(urlStr, UriKind.Relative, out var url))
                         {
                             url = new Uri(baseUri, url);
                             stylesheet = stylesheet.Remove(idx + 4, endIdx - idx - 4);

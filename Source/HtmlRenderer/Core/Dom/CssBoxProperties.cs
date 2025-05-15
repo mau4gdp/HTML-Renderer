@@ -51,7 +51,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         private string _borderLeftStyle = "none";
         private string _borderSpacing = "0";
         private string _borderCollapse = "separate";
-        private string _bottom;
+        private string? _bottom;
         private string _color = "black";
         private string _content = "normal";
         private string _cornerNwRadius = "0";
@@ -62,7 +62,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         private string _emptyCells = "show";
         private string _direction = "ltr";
         private string _display = "inline";
-        private string _fontFamily;
+        private string? _fontFamily;
         private string _fontSize = "medium";
         private string _fontStyle = "normal";
         private string _fontVariant = "normal";
@@ -85,7 +85,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         private string _paddingRight = "0";
         private string _paddingTop = "0";
         private string _pageBreakInside = CssConstants.Auto;
-        private string _right;
+        private string? _right;
         private string _textAlign = string.Empty;
         private string _textDecoration = string.Empty;
         private string _textIndent = "0";
@@ -151,7 +151,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         private RColor _actualBorderBottomColor = RColor.Empty;
         private RColor _actualBorderRightColor = RColor.Empty;
         private RColor _actualBackgroundColor = RColor.Empty;
-        private RFont _actualFont;
+        private RFont? _actualFont;
 
         #endregion
 
@@ -164,7 +164,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             set
             {
                 _borderBottomWidth = value;
-                _actualBorderBottomWidth = Single.NaN;
+                _actualBorderBottomWidth = float.NaN;
             }
         }
 
@@ -174,7 +174,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             set
             {
                 _borderLeftWidth = value;
-                _actualBorderLeftWidth = Single.NaN;
+                _actualBorderLeftWidth = float.NaN;
             }
         }
 
@@ -184,7 +184,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             set
             {
                 _borderRightWidth = value;
-                _actualBorderRightWidth = Single.NaN;
+                _actualBorderRightWidth = float.NaN;
             }
         }
 
@@ -194,7 +194,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             set
             {
                 _borderTopWidth = value;
-                _actualBorderTopWidth = Single.NaN;
+                _actualBorderTopWidth = float.NaN;
             }
         }
 
@@ -426,7 +426,8 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         public string Top
         {
             get { return _top; }
-            set {
+            set
+            {
                 _top = value;
 
                 if (Position == CssConstants.Fixed)
@@ -591,7 +592,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             set { _wordBreak = value; }
         }
 
-        public string FontFamily
+        public string? FontFamily
         {
             get { return _fontFamily; }
             set { _fontFamily = value; }
@@ -602,20 +603,20 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
             get { return _fontSize; }
             set
             {
-                string length = RegexParserUtils.Search(RegexParserUtils.CssLength, value);
+                var length = RegexParserUtils.Search(RegexParserUtils.CssLength, value);
 
                 if (length != null)
                 {
                     string computedValue;
-                    CssLength len = new CssLength(length);
-
+                    CssLength len = new(length);
+                    var p = GetParent();
                     if (len.HasError)
                     {
                         computedValue = "medium";
                     }
-                    else if (len.Unit == CssUnit.Ems && GetParent() != null)
+                    else if (len.Unit == CssUnit.Ems && p != null)
                     {
-                        computedValue = len.ConvertEmToPoints(GetParent().ActualFont.Size).ToString();
+                        computedValue = len.ConvertEmToPoints(p.ActualFont.Size).ToString();
                     }
                     else
                     {
@@ -686,7 +687,8 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// </summary>
         public RPoint Location
         {
-            get {
+            get
+            {
                 if (_location.IsEmpty && Position == CssConstants.Fixed)
                 {
                     var left = Left;
@@ -696,7 +698,8 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
                 }
                 return _location;
             }
-            set {
+            set
+            {
                 _location = value;
             }
         }
@@ -1249,7 +1252,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// </summary>
         public RFont ActualParentFont
         {
-            get { return GetParent() == null ? ActualFont : GetParent().ActualFont; }
+            get { var p = GetParent(); return p == null ? ActualFont : p.ActualFont; }
         }
 
         /// <summary>
@@ -1282,46 +1285,23 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
                         st |= RFontStyle.Bold;
                     }
 
-                    double fsize;
                     double parentSize = CssConstants.FontSize;
-
-                    if (GetParent() != null)
-                        parentSize = GetParent().ActualFont.Size;
-
-                    switch (FontSize)
+                    var p = GetParent();
+                    if (p != null)
+                        parentSize = p.ActualFont.Size;
+                    var fsize = FontSize switch
                     {
-                        case CssConstants.Medium:
-                            fsize = CssConstants.FontSize;
-                            break;
-                        case CssConstants.XXSmall:
-                            fsize = CssConstants.FontSize - 4;
-                            break;
-                        case CssConstants.XSmall:
-                            fsize = CssConstants.FontSize - 3;
-                            break;
-                        case CssConstants.Small:
-                            fsize = CssConstants.FontSize - 2;
-                            break;
-                        case CssConstants.Large:
-                            fsize = CssConstants.FontSize + 2;
-                            break;
-                        case CssConstants.XLarge:
-                            fsize = CssConstants.FontSize + 3;
-                            break;
-                        case CssConstants.XXLarge:
-                            fsize = CssConstants.FontSize + 4;
-                            break;
-                        case CssConstants.Smaller:
-                            fsize = parentSize - 2;
-                            break;
-                        case CssConstants.Larger:
-                            fsize = parentSize + 2;
-                            break;
-                        default:
-                            fsize = CssValueParser.ParseLength(FontSize, parentSize, parentSize, null, true, true);
-                            break;
-                    }
-
+                        CssConstants.Medium => CssConstants.FontSize,
+                        CssConstants.XXSmall => CssConstants.FontSize - 4,
+                        CssConstants.XSmall => CssConstants.FontSize - 3,
+                        CssConstants.Small => CssConstants.FontSize - 2,
+                        CssConstants.Large => CssConstants.FontSize + 2,
+                        CssConstants.XLarge => CssConstants.FontSize + 3,
+                        CssConstants.XXLarge => CssConstants.FontSize + 4,
+                        CssConstants.Smaller => parentSize - 2,
+                        CssConstants.Larger => parentSize + 2,
+                        _ => CssValueParser.ParseLength(FontSize, parentSize, parentSize, null, true, true),
+                    };
                     if (fsize <= 1f)
                     {
                         fsize = CssConstants.FontSize;
@@ -1424,7 +1404,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// Get the parent of this css properties instance.
         /// </summary>
         /// <returns></returns>
-        protected abstract CssBoxProperties GetParent();
+        protected abstract CssBoxProperties? GetParent();
 
         /// <summary>
         /// Gets the height of the font in the specified units
@@ -1456,7 +1436,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <param name="style">optional: the style to set</param>
         /// <param name="width">optional: the width to set</param>
         /// <param name="color">optional: the color to set</param>
-        protected void SetAllBorders(string style = null, string width = null, string color = null)
+        protected void SetAllBorders(string? style = null, string? width = null, string? color = null)
         {
             if (style != null)
                 BorderLeftStyle = BorderTopStyle = BorderRightStyle = BorderBottomStyle = style;
@@ -1476,8 +1456,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
                 _actualWordSpacing = CssUtils.WhiteSpace(g, this);
                 if (WordSpacing != CssConstants.Normal)
                 {
-                    string len = RegexParserUtils.Search(RegexParserUtils.CssLength, WordSpacing);
-                    _actualWordSpacing += CssValueParser.ParseLength(len, 1, this);
+                    var len = RegexParserUtils.Search(RegexParserUtils.CssLength, WordSpacing);
+                    if (len != null)
+                        _actualWordSpacing += CssValueParser.ParseLength(len, 1, this);
                 }
             }
         }
@@ -1487,7 +1468,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// </summary>
         /// <param name="everything">Set to true to inherit all CSS properties instead of only the ineritables</param>
         /// <param name="p">Box to inherit the properties</param>
-        protected void InheritStyle(CssBox p, bool everything)
+        protected void InheritStyle(CssBox? p, bool everything)
         {
             if (p != null)
             {

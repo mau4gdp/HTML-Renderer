@@ -11,9 +11,6 @@
 // "The Art of War"
 
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
 using TheArtOfDev.HtmlRenderer.Core;
 using TheArtOfDev.HtmlRenderer.Core.Entities;
@@ -42,12 +39,12 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
         /// <summary>
         /// cache of brush color to brush instance
         /// </summary>
-        private readonly Dictionary<RColor, RBrush> _brushesCache = new Dictionary<RColor, RBrush>();
+        private readonly Dictionary<RColor, RBrush> _brushesCache = new();
 
         /// <summary>
         /// cache of pen color to pen instance
         /// </summary>
-        private readonly Dictionary<RColor, RPen> _penCache = new Dictionary<RColor, RPen>();
+        private readonly Dictionary<RColor, RPen> _penCache = new();
 
         /// <summary>
         /// cache of all the font used not to create same font again and again
@@ -57,17 +54,17 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
         /// <summary>
         /// default CSS parsed data singleton
         /// </summary>
-        private CssData _defaultCssData;
+        private CssData? _defaultCssData;
 
         /// <summary>
         /// image used to draw loading image icon
         /// </summary>
-        private RImage _loadImage;
+        private RImage? _loadImage;
 
         /// <summary>
         /// image used to draw error image icon
         /// </summary>
-        private RImage _errorImage;
+        private RImage? _errorImage;
 
         #endregion
 
@@ -85,7 +82,7 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
         /// </summary>
         public CssData DefaultCssData
         {
-            get { return _defaultCssData ?? (_defaultCssData = CssData.Parse(this, CssDefaults.DefaultStyleSheet, false)); }
+            get { return _defaultCssData ??= CssData.Parse(this, CssDefaults.DefaultStyleSheet, false); }
         }
 
         /// <summary>
@@ -106,8 +103,7 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
         /// <returns>pen instance</returns>
         public RPen GetPen(RColor color)
         {
-            RPen pen;
-            if (!_penCache.TryGetValue(color, out pen))
+            if (!_penCache.TryGetValue(color, out RPen? pen))
             {
                 _penCache[color] = pen = CreatePen(color);
             }
@@ -121,8 +117,7 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
         /// <returns>brush instance</returns>
         public RBrush GetSolidBrush(RColor color)
         {
-            RBrush brush;
-            if (!_brushesCache.TryGetValue(color, out brush))
+            if (!_brushesCache.TryGetValue(color, out RBrush? brush))
             {
                 _brushesCache[color] = brush = CreateSolidBrush(color);
             }
@@ -147,7 +142,7 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
         /// </summary>
         /// <param name="image">the image returned from load event</param>
         /// <returns>converted image or null</returns>
-        public RImage ConvertImage(object image)
+        public RImage? ConvertImage(object image)
         {
             // TODO:a remove this by creating better API.
             return ConvertImageInt(image);
@@ -214,8 +209,8 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
             if (_loadImage == null)
             {
                 var stream = typeof(HtmlRendererUtils).Assembly.GetManifestResourceStream("TheArtOfDev.HtmlRenderer.Core.Utils.ImageLoad.png");
-                if (stream != null)
-                    _loadImage = ImageFromStream(stream);
+                //if (stream != null)
+                    _loadImage = ImageFromStream(stream!);
             }
             return _loadImage;
         }
@@ -228,8 +223,8 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
             if (_errorImage == null)
             {
                 var stream = typeof(HtmlRendererUtils).Assembly.GetManifestResourceStream("TheArtOfDev.HtmlRenderer.Core.Utils.ImageError.png");
-                if (stream != null)
-                    _errorImage = ImageFromStream(stream);
+                //if (stream != null)
+                    _errorImage = ImageFromStream(stream!);
             }
             return _errorImage;
         }
@@ -296,7 +291,7 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
         /// <param name="name">the name of the image for save dialog</param>
         /// <param name="extension">the extension of the image for save dialog</param>
         /// <param name="control">optional: the control to show the dialog on</param>
-        public void SaveToFile(RImage image, string name, string extension, RControl control = null)
+        public void SaveToFile(RImage image, string name, string extension, RControl? control = null)
         {
             SaveToFileInt(image, name, extension, control);
         }
@@ -365,7 +360,7 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
         /// </summary>
         /// <param name="image">the image returned from load event</param>
         /// <returns>converted image or null</returns>
-        protected abstract RImage ConvertImageInt(object image);
+        protected abstract RImage? ConvertImageInt(object image);
 
         /// <summary>
         /// Create an <see cref="RImage"/> object from the given stream.
@@ -449,7 +444,7 @@ namespace TheArtOfDev.HtmlRenderer.Adapters
         /// <param name="name">the name of the image for save dialog</param>
         /// <param name="extension">the extension of the image for save dialog</param>
         /// <param name="control">optional: the control to show the dialog on</param>
-        protected virtual void SaveToFileInt(RImage image, string name, string extension, RControl control = null)
+        protected virtual void SaveToFileInt(RImage image, string name, string extension, RControl? control = null)
         {
             throw new NotImplementedException();
         }

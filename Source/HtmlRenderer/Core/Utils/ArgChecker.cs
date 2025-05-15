@@ -32,7 +32,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
             if (!condition)
             {
                 // Throwing exception
-                throw (TException)Activator.CreateInstance(typeof(TException), message);
+                throw (Activator.CreateInstance(typeof(TException), message) as TException)!;
             }
         }
 
@@ -42,7 +42,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// <param name="arg">argument to validate</param>
         /// <param name="argName">Name of the argument checked</param>
         /// <exception cref="System.ArgumentNullException">if <paramref name="arg"/> is Null</exception>
-        public static void AssertArgNotNull(object arg, string argName)
+        public static void AssertArgNotNull(object? arg, string argName)
         {
             if (arg == null)
             {

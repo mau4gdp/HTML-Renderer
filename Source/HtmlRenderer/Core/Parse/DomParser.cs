@@ -40,7 +40,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// </summary>
         public DomParser(CssParser cssParser)
         {
-            ArgChecker.AssertArgNotNull(cssParser, "cssParser");
+            ArgumentNullException.ThrowIfNull(cssParser, nameof(cssParser));
 
             _cssParser = cssParser;
         }
@@ -52,7 +52,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="htmlContainer">the html container to use for reference resolve</param>
         /// <param name="cssData">the css data to use</param>
         /// <returns>the root of the generated tree</returns>
-        public CssBox GenerateCssTree(string html, HtmlContainerInt htmlContainer, ref CssData cssData)
+        public CssBox? GenerateCssTree(string html, HtmlContainerInt htmlContainer, ref CssData cssData)
         {
             var root = HtmlParser.ParseDocument(html);
             if (root != null)
@@ -100,12 +100,10 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
             {
                 // Check for the <link rel=stylesheet> tag
                 if (box.HtmlTag.Name.Equals("link", StringComparison.CurrentCultureIgnoreCase) &&
-                    box.GetAttribute("rel", string.Empty).Equals("stylesheet", StringComparison.CurrentCultureIgnoreCase))
+                    box.GetAttribute("rel").Equals("stylesheet", StringComparison.CurrentCultureIgnoreCase))
                 {
                     CloneCssData(ref cssData, ref cssDataChanged);
-                    string stylesheet;
-                    CssData stylesheetData;
-                    StylesheetLoadHandler.LoadStylesheet(htmlContainer, box.GetAttribute("href", string.Empty), box.HtmlTag.Attributes, out stylesheet, out stylesheetData);
+                    StylesheetLoadHandler.LoadStylesheet(htmlContainer, box.GetAttribute("href"), box.HtmlTag.Attributes, out var stylesheet, out var stylesheetData);
                     if (stylesheet != null)
                         _cssParser.ParseStyleSheet(cssData, stylesheet);
                     else if (stylesheetData != null)
@@ -117,7 +115,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                 {
                     CloneCssData(ref cssData, ref cssDataChanged);
                     foreach (var child in box.Boxes)
-                        _cssParser.ParseStyleSheet(cssData, child.Text.CutSubstring());
+                        _cssParser.ParseStyleSheet(cssData, child.Text?.CutSubstring());
                 }
             }
 
@@ -173,7 +171,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
             }
 
             // cascade text decoration only to boxes that actually have text so it will be handled correctly.
-            if (box.TextDecoration != String.Empty && box.Text == null)
+            if (box.TextDecoration != string.Empty && box.Text == null)
             {
                 foreach (var childBox in box.Boxes)
                     childBox.TextDecoration = box.TextDecoration;
@@ -217,28 +215,29 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="cssData">the css data to use to get the matching css blocks</param>
         private static void AssignClassCssBlocks(CssBox box, CssData cssData)
         {
-            var classes = box.HtmlTag.TryGetAttribute("class");
+            var classes = box.HtmlTag?.TryGetAttribute("class");
 
             var startIdx = 0;
-            while (startIdx < classes.Length)
-            {
-                while (startIdx < classes.Length && classes[startIdx] == ' ')
-                    startIdx++;
-
-                if (startIdx < classes.Length)
+            if (classes != null)
+                while (startIdx < classes.Length)
                 {
-                    var endIdx = classes.IndexOf(' ', startIdx);
+                    while (startIdx < classes.Length && classes[startIdx] == ' ')
+                        startIdx++;
 
-                    if (endIdx < 0)
-                        endIdx = classes.Length;
+                    if (startIdx < classes.Length)
+                    {
+                        var endIdx = classes.IndexOf(' ', startIdx);
 
-                    var cls = "." + classes.Substring(startIdx, endIdx - startIdx);
-                    AssignCssBlocks(box, cssData, cls);
-                    AssignCssBlocks(box, cssData, box.HtmlTag.Name + cls);
+                        if (endIdx < 0)
+                            endIdx = classes.Length;
 
-                    startIdx = endIdx + 1;
+                        var cls = "." + classes[startIdx..endIdx];
+                        AssignCssBlocks(box, cssData, cls);
+                        AssignCssBlocks(box, cssData, box.HtmlTag?.Name + cls);
+
+                        startIdx = endIdx + 1;
+                    }
                 }
-            }
         }
 
         /// <summary>
@@ -274,14 +273,14 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
             {
                 assignable = IsBlockAssignableToBoxWithSelector(box, block);
             }
-            else if (box.HtmlTag.Name.Equals("a", StringComparison.OrdinalIgnoreCase) && block.Class.Equals("a", StringComparison.OrdinalIgnoreCase) && !box.HtmlTag.HasAttribute("href"))
+            else if (box.HtmlTag != null && box.HtmlTag.Name.Equals("a", StringComparison.OrdinalIgnoreCase) && block.Class.Equals("a", StringComparison.OrdinalIgnoreCase) && !box.HtmlTag.HasAttribute("href"))
             {
                 assignable = false;
             }
 
             if (assignable && block.Hover)
             {
-                box.HtmlContainer.AddHoverBox(box, block);
+                box.HtmlContainer?.AddHoverBox(box, block);
                 assignable = false;
             }
 
@@ -296,39 +295,41 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <returns>true - the block is assignable to the box, false - otherwise</returns>
         private static bool IsBlockAssignableToBoxWithSelector(CssBox box, CssBlock block)
         {
-            foreach (var selector in block.Selectors)
-            {
-                bool matched = false;
-                while (!matched)
+            if (block.Selectors != null)
+                foreach (var selector in block.Selectors)
                 {
-                    box = box.ParentBox;
-                    while (box != null && box.HtmlTag == null)
-                        box = box.ParentBox;
-
-                    if (box == null)
-                        return false;
-
-                    if (box.HtmlTag.Name.Equals(selector.Class, StringComparison.InvariantCultureIgnoreCase))
-                        matched = true;
-
-                    if (!matched && box.HtmlTag.HasAttribute("class"))
+                    bool matched = false;
+                    var rbox = box;
+                    while (!matched)
                     {
-                        var className = box.HtmlTag.TryGetAttribute("class");
-                        if (selector.Class.Equals("." + className, StringComparison.InvariantCultureIgnoreCase) || selector.Class.Equals(box.HtmlTag.Name + "." + className, StringComparison.InvariantCultureIgnoreCase))
-                            matched = true;
-                    }
+                        rbox = rbox.ParentBox;
+                        while (rbox != null && rbox.HtmlTag == null)
+                            rbox = rbox.ParentBox;
 
-                    if (!matched && box.HtmlTag.HasAttribute("id"))
-                    {
-                        var id = box.HtmlTag.TryGetAttribute("id");
-                        if (selector.Class.Equals("#" + id, StringComparison.InvariantCultureIgnoreCase))
-                            matched = true;
-                    }
+                        if (rbox == null)
+                            return false;
 
-                    if (!matched && selector.DirectParent)
-                        return false;
+                        if (rbox.HtmlTag?.Name.Equals(selector.Class, StringComparison.InvariantCultureIgnoreCase) ?? false)
+                            matched = true;
+
+                        if (!matched && (rbox.HtmlTag?.HasAttribute("class") ?? false))
+                        {
+                            var className = rbox.HtmlTag.TryGetAttribute("class");
+                            if (selector.Class.Equals("." + className, StringComparison.InvariantCultureIgnoreCase) || selector.Class.Equals(rbox.HtmlTag.Name + "." + className, StringComparison.InvariantCultureIgnoreCase))
+                                matched = true;
+                        }
+
+                        if (!matched && (rbox.HtmlTag?.HasAttribute("id") ?? false))
+                        {
+                            var id = rbox.HtmlTag.TryGetAttribute("id");
+                            if (selector.Class.Equals("#" + id, StringComparison.InvariantCultureIgnoreCase))
+                                matched = true;
+                        }
+
+                        if (!matched && selector.DirectParent)
+                            return false;
+                    }
                 }
-            }
             return true;
         }
 
@@ -346,9 +347,9 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                 {
                     value = CssUtils.GetPropertyValue(box.ParentBox, prop.Key);
                 }
-                if (IsStyleOnElementAllowed(box, prop.Key, value))
+                if (value != null && IsStyleOnElementAllowed(box, prop.Key, value))
                 {
-                    CssUtils.SetPropertyValue(box, prop.Key, value);
+                    CssUtils.SetPropertyValue(box, prop.Key, value!);
                 }
             }
         }
@@ -413,7 +414,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         {
             if (tag.HasAttributes())
             {
-                foreach (string att in tag.Attributes.Keys)
+                foreach (string att in tag.Attributes!.Keys)
                 {
                     string value = tag.Attributes[att];
 
@@ -500,7 +501,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <returns></returns>
         private static string TranslateLength(string htmlLength)
         {
-            CssLength len = new CssLength(htmlLength);
+            CssLength len = new(htmlLength);
 
             if (len.HasError)
             {
@@ -598,7 +599,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                     else
                     {
                         // remove text box that has no 
-                        childBox.ParentBox.Boxes.RemoveAt(i);
+                        childBox.ParentBox?.Boxes.RemoveAt(i);
                     }
                 }
                 else
@@ -650,7 +651,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
             }
 
             int lastBr = -1;
-            CssBox brBox;
+            CssBox? brBox;
             do
             {
                 brBox = null;
@@ -695,11 +696,11 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
                     while (tempRightBox != null)
                     {
                         // loop on the created temp right box for the fixed box until no more need (optimization remove recursion)
-                        CssBox newTempRightBox = null;
+                        CssBox? newTempRightBox = null;
                         if (DomUtils.ContainsInlinesOnly(tempRightBox) && !ContainsInlinesOnlyDeep(tempRightBox))
                             newTempRightBox = CorrectBlockInsideInlineImp(tempRightBox);
 
-                        tempRightBox.ParentBox.SetAllBoxes(tempRightBox);
+                        tempRightBox.ParentBox?.SetAllBoxes(tempRightBox);
                         tempRightBox.ParentBox = null;
                         tempRightBox = newTempRightBox;
                     }
@@ -715,7 +716,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
             }
             catch (Exception ex)
             {
-                box.HtmlContainer.ReportError(HtmlRenderErrorType.HtmlParsing, "Failed in block inside inline box correction", ex);
+                box.HtmlContainer?.ReportError(HtmlRenderErrorType.HtmlParsing, "Failed in block inside inline box correction", ex);
             }
         }
 
@@ -723,7 +724,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// Rearrange the DOM of the box to have block box with boxes before the inner block box and after.
         /// </summary>
         /// <param name="box">the box that has the problem</param>
-        private static CssBox CorrectBlockInsideInlineImp(CssBox box)
+        private static CssBox? CorrectBlockInsideInlineImp(CssBox box)
         {
             if (box.Display == CssConstants.Inline)
                 box.Display = CssConstants.Block;
@@ -773,7 +774,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Parse
         /// <param name="leftBlock">the left block box that is created for the split</param>
         private static void CorrectBlockSplitBadBox(CssBox parentBox, CssBox badBox, CssBox leftBlock)
         {
-            CssBox leftbox = null;
+            CssBox? leftbox = null;
             while (badBox.Boxes[0].IsInline && ContainsInlinesOnlyDeep(badBox.Boxes[0]))
             {
                 if (leftbox == null)

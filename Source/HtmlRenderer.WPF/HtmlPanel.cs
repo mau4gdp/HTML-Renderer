@@ -104,7 +104,7 @@ namespace TheArtOfDev.HtmlRenderer.WPF
             get { return 2; }
         }
 
-        protected override Visual GetVisualChild(int index)
+        protected override Visual? GetVisualChild(int index)
         {
             if (index == 0)
                 return _verticalScrollBar;

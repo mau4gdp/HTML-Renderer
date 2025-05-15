@@ -45,7 +45,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// <param name="fullString">the full string that this sub-string is part of</param>
         public SubString(string fullString)
         {
-            ArgChecker.AssertArgNotNull(fullString, "fullString");
+            ArgumentNullException.ThrowIfNull(fullString, nameof(fullString));
 
             _fullString = fullString;
             _startIdx = 0;
@@ -61,11 +61,11 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// <exception cref="ArgumentNullException"><paramref name="fullString"/> is null</exception>
         public SubString(string fullString, int startIdx, int length)
         {
-            ArgChecker.AssertArgNotNull(fullString, "fullString");
+            ArgumentNullException.ThrowIfNull(fullString, nameof(fullString));
             if (startIdx < 0 || startIdx >= fullString.Length)
-                throw new ArgumentOutOfRangeException("startIdx", "Must within fullString boundries");
+                throw new ArgumentOutOfRangeException(nameof(startIdx), "Must within fullString boundries");
             if (length < 0 || startIdx + length > fullString.Length)
-                throw new ArgumentOutOfRangeException("length", "Must within fullString boundries");
+                throw new ArgumentOutOfRangeException(nameof(length), "Must within fullString boundries");
 
             _fullString = fullString;
             _startIdx = startIdx;
@@ -106,7 +106,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
             get
             {
                 if (idx < 0 || idx > _length)
-                    throw new ArgumentOutOfRangeException("idx", "must be within the string range");
+                    throw new ArgumentOutOfRangeException(nameof(idx), "must be within the string range");
                 return _fullString[_startIdx + idx];
             }
         }
@@ -170,11 +170,11 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         public string Substring(int startIdx, int length)
         {
             if (startIdx < 0 || startIdx > _length)
-                throw new ArgumentOutOfRangeException("startIdx");
+                throw new ArgumentOutOfRangeException(nameof(startIdx));
             if (length > _length)
-                throw new ArgumentOutOfRangeException("length");
+                throw new ArgumentOutOfRangeException(nameof(length));
             if (startIdx + length > _length)
-                throw new ArgumentOutOfRangeException("length");
+                throw new ArgumentOutOfRangeException(nameof(length));
 
             return _fullString.Substring(_startIdx + startIdx, length);
         }

@@ -10,11 +10,10 @@
 // - Sun Tsu,
 // "The Art of War"
 
-using PdfSharpCore.Drawing;
-using PdfSharpCore.Pdf;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 using System.Drawing;
 using System.Drawing.Text;
-using System.IO;
 using TheArtOfDev.HtmlRenderer.Adapters;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
 using TheArtOfDev.HtmlRenderer.PdfSharp.Utilities;
@@ -31,7 +30,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
         /// <summary>
         /// Singleton instance of global adapter.
         /// </summary>
-        private static readonly PdfSharpAdapter _instance = new PdfSharpAdapter();
+        private static readonly PdfSharpAdapter _instance = new();
 
         #endregion
 
@@ -43,12 +42,14 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
         {
             AddFontFamilyMapping("monospace", "Courier New");
             AddFontFamilyMapping("Helvetica", "Arial");
-
-            var families = new InstalledFontCollection();
-
-            foreach (var family in families.Families)
+            if (OperatingSystem.IsWindows())
             {
-                AddFontFamily(new FontFamilyAdapter(new XFontFamily(family.Name)));
+                InstalledFontCollection families = new();
+
+                foreach (FontFamily family in families.Families)
+                {
+                    AddFontFamily(new FontFamilyAdapter(new XFontFamily(family.Name)));
+                }
             }
         }
 
@@ -64,7 +65,7 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
         {
             try
             {
-                var color = Color.FromKnownColor((KnownColor)System.Enum.Parse(typeof(KnownColor), colorName, true));
+                Color color = Color.FromKnownColor((KnownColor)System.Enum.Parse(typeof(KnownColor), colorName, true));
                 return Utils.Convert(color);
             }
             catch
@@ -107,27 +108,27 @@ namespace TheArtOfDev.HtmlRenderer.PdfSharp.Adapters
             return new BrushAdapter(new XLinearGradientBrush(Utils.Convert(rect), Utils.Convert(color1), Utils.Convert(color2), mode));
         }
 
-        protected override RImage ConvertImageInt(object image)
+        protected override RImage? ConvertImageInt(object image)
         {
             return image != null ? new ImageAdapter((XImage)image) : null;
         }
 
         protected override RImage ImageFromStreamInt(Stream memoryStream)
         {
-            return new ImageAdapter(XImage.FromStream(() => memoryStream));
+            return new ImageAdapter(XImage.FromStream(/*() => */memoryStream));
         }
 
         protected override RFont CreateFontInt(string family, double size, RFontStyle style)
         {
-            var fontStyle = (XFontStyle)((int)style);
-            var xFont = new XFont(family, size, fontStyle, new XPdfFontOptions(PdfFontEncoding.Unicode));
+            XFontStyleEx fontStyle = (XFontStyleEx)((int)style);
+            XFont xFont = new(family, size, fontStyle, new XPdfFontOptions(PdfFontEncoding.Unicode));
             return new FontAdapter(xFont);
         }
 
         protected override RFont CreateFontInt(RFontFamily family, double size, RFontStyle style)
         {
-            var fontStyle = (XFontStyle)((int)style);
-            var xFont = new XFont(((FontFamilyAdapter)family).FontFamily.Name, size, fontStyle, new XPdfFontOptions(PdfFontEncoding.Unicode));
+            XFontStyleEx fontStyle = (XFontStyleEx)((int)style);
+            XFont xFont = new(((FontFamilyAdapter)family).FontFamily.Name, size, fontStyle, new XPdfFontOptions(PdfFontEncoding.Unicode));
             return new FontAdapter(xFont);
         }
     }

@@ -80,7 +80,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Entities
         /// </summary>
         public string AnchorId
         {
-            get { return IsAnchor && _href.Length > 1 ? _href.Substring(1) : string.Empty; }
+            get { return IsAnchor && _href.Length > 1 ? _href[1..] : string.Empty; }
         }
 
         public override string ToString()
