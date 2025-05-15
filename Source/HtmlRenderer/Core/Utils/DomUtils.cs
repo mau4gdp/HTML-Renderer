@@ -823,22 +823,23 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         {
             // ReSharper disable PossibleMultipleEnumeration
             var cleanTagStyles = new Dictionary<string, string>();
-            var defaultBlocks = box.HtmlContainer?.Adapter.DefaultCssData.GetCssBlock(box.HtmlTag.Name);
-            foreach (var style in tagStyles)
-            {
-                bool isDefault = false;
-                foreach (var defaultBlock in defaultBlocks)
+            var defaultBlocks = box.HtmlContainer?.Adapter.DefaultCssData.GetCssBlock(box.HtmlTag?.Name ?? "");
+            if (defaultBlocks != null)
+                foreach (var style in tagStyles)
                 {
-                    if (defaultBlock.Properties.TryGetValue(style.Key, out string value) && value.Equals(style.Value, StringComparison.OrdinalIgnoreCase))
+                    bool isDefault = false;
+                    foreach (var defaultBlock in defaultBlocks)
                     {
-                        isDefault = true;
-                        break;
+                        if (defaultBlock.Properties.TryGetValue(style.Key, out string? value) && value.Equals(style.Value, StringComparison.OrdinalIgnoreCase))
+                        {
+                            isDefault = true;
+                            break;
+                        }
                     }
-                }
 
-                if (!isDefault)
-                    cleanTagStyles[style.Key] = style.Value;
-            }
+                    if (!isDefault)
+                        cleanTagStyles[style.Key] = style.Value;
+                }
             return cleanTagStyles;
             // ReSharper restore PossibleMultipleEnumeration
         }
@@ -876,15 +877,15 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
         /// <param name="selectedText">is to get selected text or all the text in the word</param>
         private static string GetSelectedWord(CssRect rect, bool selectedText)
         {
-            if (selectedText && rect.SelectedStartIndex > -1 && rect.SelectedEndIndexOffset > -1)
+            if (selectedText && rect.SelectedStartIndex > -1 && rect.SelectedEndIndexOffset > -1 && rect.Text != null)
             {
                 return rect.Text[rect.SelectedStartIndex..rect.SelectedEndIndexOffset];
             }
-            else if (selectedText && rect.SelectedStartIndex > -1)
+            else if (selectedText && rect.SelectedStartIndex > -1 && rect.Text != null)
             {
                 return rect.Text[rect.SelectedStartIndex..] + (rect.HasSpaceAfter ? " " : "");
             }
-            else if (selectedText && rect.SelectedEndIndexOffset > -1)
+            else if (selectedText && rect.SelectedEndIndexOffset > -1 && rect.Text != null)
             {
                 return rect.Text[..rect.SelectedEndIndexOffset];
             }

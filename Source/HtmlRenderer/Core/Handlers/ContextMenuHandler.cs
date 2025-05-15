@@ -276,7 +276,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
         /// <param name="parent">the parent control to show the context menu on</param>
         /// <param name="rect">the rectangle that was clicked to show context menu</param>
         /// <param name="link">the link that was clicked to show context menu on</param>
-        public void ShowContextMenu(RControl parent, CssRect rect, CssBox link)
+        public void ShowContextMenu(RControl parent, CssRect? rect, CssBox? link)
         {
             try
             {
@@ -307,7 +307,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Handlers
                         _contextMenu.AddItem(_saveImage, rect.Image != null, OnSaveImageClick);
                         if (_htmlContainer.IsSelectionEnabled)
                         {
-                            _contextMenu.AddItem(_copyImageLink, !string.IsNullOrEmpty(_currentRect.OwnerBox.GetAttribute("src")), OnCopyImageLinkClick);
+                            _contextMenu.AddItem(_copyImageLink, !string.IsNullOrEmpty(_currentRect?.OwnerBox.GetAttribute("src")), OnCopyImageLinkClick);
                             _contextMenu.AddItem(_copyImage, rect.Image != null, OnCopyImageClick);
                         }
                         _contextMenu.AddDivider();

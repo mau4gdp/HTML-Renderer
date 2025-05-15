@@ -51,7 +51,7 @@ namespace TheArtOfDev.HtmlRenderer.Core.Utils
                     rect.X -= 2; // TODO:a find better way to fix it
                     rect.Width += 2;
 
-                    if (!box.IsFixed)
+                    if (!box.IsFixed && box.HtmlContainer != null)
                         rect.Offset(box.HtmlContainer.ScrollOffset);
 
                     rect.Intersect(prevClip);
